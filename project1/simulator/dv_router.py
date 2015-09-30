@@ -41,6 +41,9 @@ class DVRouter (basics.DVRouterBase):
     The port attached to the link and the link latency are passed in.
     """
     self.neighbors[port] = latency
+    for dest in self.me.keys():
+        l,p,t = self.me[dest]
+            send_one_update(dest,p)
     
 
   def handle_link_down (self, port):
@@ -99,23 +102,33 @@ class DVRouter (basics.DVRouterBase):
             if v[1] >= 15:
                 obsolete.append(k)
             else:
-                v[1] += 5
+                v[1] += 5 # need to chek if it's correct
         for i in obsolete:
             del vector[i] 
+            
+    
 
     #send update
+    obsolete = []
     for dest in self.me.keys():
-        send_update(dest)
+        l,p,t = self.me[dest]
+        if t<15:
+            send_all_update(dest)
+        else:
+            obsolete.append(dest)
+            
+    for i in obsolete:
+        del self.me[i] 
+     
     
 
   """
     Sends one route update to all neighbor routers (no hosts)
   """
-  def send_update(self, dest):  
+  def send_one_update(self, dest, port):  
       latency,p,t = self.me[dest]
       packet = basics.RoutePacket(dest, latency)      
        #   self.send(packet, self.vectors[destination][2], flood=True)      
-      for port in self.me.keys():
           self.send(packet, port, flood=False)
       
   def chek_for_better_path(dest):
@@ -124,7 +137,11 @@ class DVRouter (basics.DVRouterBase):
         l,ttl = v[dest]
         if l + neighbors[k] < latency:
             self.me[dest] = (l + neighbors[k],k, ttl)
-    
+            
+  def send_all_update(self, dest):
+      for port in self.me.keys():
+        if port!=p:
+            send_one_update(dest, port):
 
 
 
