@@ -41,6 +41,7 @@ class DVRouter (basics.DVRouterBase):
     The port attached to the link and the link latency are passed in.
     """
     self.neighbors[port] = latency
+    # send update on that port
     for dest in self.me.keys():
         l,p,t = self.me[dest]
             send_one_update(dest,p)
@@ -52,13 +53,26 @@ class DVRouter (basics.DVRouterBase):
 
     The port number used by the link is passed in.
     """
-    for k,v in self.vectors.iteritems():
-        if port in v and v[0] == 1:
-            del self.host_ports[port]
-            del self.vectors[k]
+    del self.neighbors[port]    
+    if port in self.DV.keys(): # router fall off
+        del self.DV[port]
+    else:                       # host fall off
+        for dest,v in self.me.iteritems():
+            l,p,t = v
+            if p == port:
+                del self.me[dest]
+                return
+
+        
+        
+        
+    # for k,v in :
+        # if port in  and v[0] == 1:
+            # del self.host_ports[port]
+            # del self.vectors[k]
             #send update
-        elif port in v:
-            del self.host_ports[port]
+        # elif port in v:
+            # del self.host_ports[port]
             #recalculation and update
 
   def handle_rx (self, packet, port):
