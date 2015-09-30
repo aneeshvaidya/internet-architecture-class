@@ -80,7 +80,6 @@ class DVRouter (basics.DVRouterBase):
         #self.vectors[packet.src] = [1, self.neighbors[port], port, -1]
         self.me[packet.src] = (self.neighbors[port], port,-1) # set like {... h1:(1,8) ...} for own DV
     else:
-      # self.send(packet, port=port)
         if self.me.get(packet.destination):
             packet.trace.append(self)
             l,p,t = self.me[packet.destination]
@@ -93,19 +92,31 @@ class DVRouter (basics.DVRouterBase):
     When called, your router should send tables to neighbors.  It also might
     not be a bad place to check for whether any entries have expired.
     """
-    for k,v in self.vectors.iteritems():
-        if v[3] >= 15:
-            del self.vectors[k]
-        else:
-            v[3] += 5
-        #send update
+    # check for obsolete records
+    for port,vector in self.DV.iteritems():
+        obsolete = []
+        for k,v in vector.iteritems():
+            if v[1] >= 15:
+                obsolete.append(k)
+            else:
+                v[1] += 5
+        for i in obsolete:
+            del vector[i] 
+
+    #send update
+    for dest in self.me.keys():
+        send_update(dest)
+    
 
   """
-    Sends update to neighbors
+    Sends one route update to all neighbor routers (no hosts)
   """
-  def send_update(self, destination):  
-      packet = basics.RoutePacket(destination, self.vectors[destination][1])
-      self.send(packet, self.vectors[destination][2], flood=True)
+  def send_update(self, dest):  
+      latency,p,t = self.me[dest]
+      packet = basics.RoutePacket(dest, latency)      
+       #   self.send(packet, self.vectors[destination][2], flood=True)      
+      for port in self.me.keys():
+          self.send(packet, port, flood=False)
       
   def chek_for_better_path(dest):
       for k,v in self.DV.iteritems():
