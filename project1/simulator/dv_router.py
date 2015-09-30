@@ -24,10 +24,10 @@ class DVRouter (basics.DVRouterBase):
     """
     self.start_timer() # Starts calling handle_timer() at correct rate
     
-    # dictionary: port -> dest -> latency 
+    # dictionary: port -> dest -> (latency, ttl) 
     self.DV = {}
     
-    # own DV: dest -> (latency, port)
+    # own DV: dest -> (latency, port, ttl)
     self.me = {}
     
     # dictionary: port -> latency
@@ -74,16 +74,16 @@ class DVRouter (basics.DVRouterBase):
                 # self.vectors[packet.destination] = [len(packet.trace), packet.latency, port, 0]
         # else:               
             # self.DV[packet.destination] = [len(packet.trace), packet.latency, port, 0]
-        self.DV[port][packet.destination] = packet.latency
+        self.DV[port][packet.destination] = (packet.latency, 0)
         chek_for_better_path(packet.destination)
     elif isinstance(packet, basics.HostDiscoveryPacket):
         #self.vectors[packet.src] = [1, self.neighbors[port], port, -1]
-        self.me[packet.src] = (self.neighbors[port], port) # set like {... h1:(1,8) ...} for own DV
+        self.me[packet.src] = (self.neighbors[port], port,-1) # set like {... h1:(1,8) ...} for own DV
     else:
       # self.send(packet, port=port)
         if self.me.get(packet.destination):
             packet.trace.append(self)
-            l,p = self.me[packet.destination]
+            l,p,t = self.me[packet.destination]
             self.send(packet, port = p)
 
   def handle_timer (self):
@@ -109,9 +109,10 @@ class DVRouter (basics.DVRouterBase):
       
   def chek_for_better_path(dest):
       for k,v in self.DV.iteritems():
-        latency,port = self.me[dest]
-        if v[dest] + neighbors[k] < latency:
-            self.me[dest] = (v[dest],k)
+        latency,p,t = self.me[dest]
+        l,ttl = v[dest]
+        if l + neighbors[k] < latency:
+            self.me[dest] = (l + neighbors[k],k, ttl)
     
 
 
