@@ -14,6 +14,7 @@ class DVRouter (basics.DVRouterBase):
   #NO_LOG = True # Set to True on an instance to disable its logging
   #POISON_MODE = True # Can override POISON_MODE here
   #DEFAULT_TIMER_INTERVAL = 5 # Can override this yourself for testing
+  
 
   def __init__ (self):
     """
@@ -22,8 +23,16 @@ class DVRouter (basics.DVRouterBase):
     You probably want to do some additional initialization here.
     """
     self.start_timer() # Starts calling handle_timer() at correct rate
-    self.vectors = {}
-    self.host_ports = {}
+    
+    # dictionary: port -> dest -> latency 
+    self.DV = {}
+    
+    # own DV: dest -> (latency, port)
+    self.me = {}
+    
+    # dictionary: port -> latency
+    self.neighbors = {}
+    
 
   def handle_link_up (self, port, latency):
     """
@@ -31,7 +40,7 @@ class DVRouter (basics.DVRouterBase):
 
     The port attached to the link and the link latency are passed in.
     """
-    self.host_ports[port] = latency
+    self.neighbors[port] = latency
     
 
   def handle_link_down (self, port):
@@ -60,22 +69,22 @@ class DVRouter (basics.DVRouterBase):
     """
     #self.log("RX %s on %s (%s)", packet, port, api.current_time())
     if isinstance(packet, basics.RoutePacket):
-        if packet.destination in self.vector.keys():
-            if len(packet.trace) < 16 and packet.latency < self.vectors[packet.destination]:
-                self.vectors[packet.destination] = [len(packet.trace), packet.latency, port, 0]
-        else:
-            self.vectors[packet.destination] = [len(packet.trace), packet.latency, port, 0]
-
+        # if packet.destination in self.vector.keys():
+            # if len(packet.trace) < 16 and packet.latency < self.vectors[packet.destination]:
+                # self.vectors[packet.destination] = [len(packet.trace), packet.latency, port, 0]
+        # else:               
+            # self.DV[packet.destination] = [len(packet.trace), packet.latency, port, 0]
+        self.DV[port][packet.destination] = packet.latency
+        chek_for_better_path(packet.destination)
     elif isinstance(packet, basics.HostDiscoveryPacket):
-        self.vectors[packet.src] = [1, self.host_ports[port], port, -1]
-        #flood to neighbors probably as method
+        #self.vectors[packet.src] = [1, self.neighbors[port], port, -1]
+        self.me[packet.src] = (self.neighbors[port], port) # set like {... h1:(1,8) ...} for own DV
     else:
-      # Totally wrong behavior for the sake of demonstration only: send
-      # the packet back to where it came from!
       # self.send(packet, port=port)
-        if self.vectors.get(packet.destination):
+        if self.me.get(packet.destination):
             packet.trace.append(self)
-            self.send(packet, port=self.vectors[packet.destination][2])
+            l,p = self.me[packet.destination]
+            self.send(packet, port = p)
 
   def handle_timer (self):
     """
@@ -97,6 +106,12 @@ class DVRouter (basics.DVRouterBase):
   def send_update(self, destination):  
       packet = basics.RoutePacket(destination, self.vectors[destination][1])
       self.send(packet, self.vectors[destination][2], flood=True)
+      
+  def chek_for_better_path(dest):
+      for k,v in self.DV.iteritems():
+        latency,port = self.me[dest]
+        if v[dest] + neighbors[k] < latency:
+            self.me[dest] = (v[dest],k)
     
 
 
