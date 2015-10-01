@@ -43,8 +43,7 @@ class DVRouter (basics.DVRouterBase):
     self.neighbors[port] = latency
     # send update on that port
     for dest in self.me.keys():
-        l,p,t = self.me[dest]
-            send_one_update(dest,p)
+        self.send_one_update(dest,port)
     
 
   def handle_link_down (self, port):
@@ -92,7 +91,7 @@ class DVRouter (basics.DVRouterBase):
         # else:               
             # self.DV[packet.destination] = [len(packet.trace), packet.latency, port, 0]
         self.DV[port][packet.destination] = (packet.latency, 0)
-        chek_for_better_path(packet.destination)
+        self.chek_for_better_path(packet.destination)
     elif isinstance(packet, basics.HostDiscoveryPacket):
         #self.vectors[packet.src] = [1, self.neighbors[port], port, -1]
         self.me[packet.src] = (self.neighbors[port], port,-1) # set like {... h1:(1,8) ...} for own DV
@@ -127,7 +126,7 @@ class DVRouter (basics.DVRouterBase):
     for dest in self.me.keys():
         l,p,t = self.me[dest]
         if t<15:
-            send_all_update(dest)
+            self.send_all_update(dest)
         else:
             obsolete.append(dest)
             
@@ -143,7 +142,7 @@ class DVRouter (basics.DVRouterBase):
       latency,p,t = self.me[dest]
       packet = basics.RoutePacket(dest, latency)      
        #   self.send(packet, self.vectors[destination][2], flood=True)      
-          self.send(packet, port, flood=False)
+      self.send(packet, port, flood=False)
       
   def chek_for_better_path(dest):
       for k,v in self.DV.iteritems():
@@ -154,8 +153,9 @@ class DVRouter (basics.DVRouterBase):
             
   def send_all_update(self, dest):
       for port in self.me.keys():
+        latency,p,t = self.me[dest]
         if port!=p:
-            send_one_update(dest, port):
+            self.send_one_update(dest, port)
 
 
 
