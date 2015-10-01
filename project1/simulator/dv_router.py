@@ -85,20 +85,20 @@ class DVRouter (basics.DVRouterBase):
     """
     #self.log("RX %s on %s (%s)", packet, port, api.current_time())
     if isinstance(packet, basics.RoutePacket):
-        # if packet.destination in self.vector.keys():
-            # if len(packet.trace) < 16 and packet.latency < self.vectors[packet.destination]:
-                # self.vectors[packet.destination] = [len(packet.trace), packet.latency, port, 0]
+        # if packet.dst in self.vector.keys():
+            # if len(packet.trace) < 16 and packet.latency < self.vectors[packet.dst]:
+                # self.vectors[packet.dst] = [len(packet.trace), packet.latency, port, 0]
         # else:               
-            # self.DV[packet.destination] = [len(packet.trace), packet.latency, port, 0]
-        self.DV[port][packet.destination] = (packet.latency, 0)
-        self.chek_for_better_path(packet.destination)
+            # self.DV[packet.dst] = [len(packet.trace), packet.latency, port, 0]
+        self.DV[port][packet.dst] = (packet.latency, 0)
+        self.chek_for_better_path(packet.dst)
     elif isinstance(packet, basics.HostDiscoveryPacket):
         #self.vectors[packet.src] = [1, self.neighbors[port], port, -1]
         self.me[packet.src] = (self.neighbors[port], port,-1) # set like {... h1:(1,8) ...} for own DV
     else:
-        if self.me.get(packet.destination):
+        if self.me.get(packet.dst):
             packet.trace.append(self)
-            l,p,t = self.me[packet.destination]
+            l,p,t = self.me[packet.dst]
             self.send(packet, port = p)
 
   def handle_timer (self):
@@ -141,7 +141,7 @@ class DVRouter (basics.DVRouterBase):
   def send_one_update(self, dest, port):  
       latency,p,t = self.me[dest]
       packet = basics.RoutePacket(dest, latency)      
-       #   self.send(packet, self.vectors[destination][2], flood=True)      
+       #   self.send(packet, self.vectors[dst][2], flood=True)      
       self.send(packet, port, flood=False)
       
   def chek_for_better_path(dest):
