@@ -11,9 +11,9 @@ INFINITY = 16
 
 
 class DVRouter (basics.DVRouterBase):
-  #NO_LOG = True # Set to True on an instance to disable its logging
-  #POISON_MODE = True # Can override POISON_MODE here
-  #DEFAULT_TIMER_INTERVAL = 5 # Can override this yourself for testing
+  NO_LOG = True # Set to True on an instance to disable its logging
+  POISON_MODE = True # Can override POISON_MODE here
+  DEFAULT_TIMER_INTERVAL = 5 # Can override this yourself for testing
   
 
   def __init__ (self):
@@ -140,9 +140,12 @@ class DVRouter (basics.DVRouterBase):
   """
   def send_one_update(self, dest, port):  
       latency,p,t = self.me[dest]
-      packet = basics.RoutePacket(dest, latency)      
-       #   self.send(packet, self.vectors[dst][2], flood=True)      
-      self.send(packet, port, flood=False)
+      packet = basics.RoutePacket(dest, latency)
+      if port!=p:                                   # split horizon      
+        self.send(packet, port, flood=False)
+      elif POISON_MODE and port == p:               # poison reverse
+        packet = basics.RoutePacket(dest, INFINITY)
+        self.send(packet, port, flood=False)
       
   def chek_for_better_path(dest):
       for k,v in self.DV.iteritems():
@@ -154,8 +157,7 @@ class DVRouter (basics.DVRouterBase):
   def send_all_update(self, dest):
       for port in self.me.keys():
         latency,p,t = self.me[dest]
-        if port!=p:
-            self.send_one_update(dest, port)
+        self.send_one_update(dest, port)
 
 
 
