@@ -49,6 +49,8 @@ class DVRouter (basics.DVRouterBase):
         neighbor_vector = self.neighbors[port] 
         for key in neighbor_vector.keys():
             if self.vector.get(key):
+                if POISON_MODE:
+                    self.send_update(key)
                 del self.vector[key]
         del self.neighbors[port]
 
@@ -99,14 +101,14 @@ class DVRouter (basics.DVRouterBase):
                 del self.vector[k]
             else:
                 self.vector[k][2] -= 5
-                self.send_one_update(k)
+                self.send_update(k)
 #        for k, v in self.neighbors.iteritems():
 #            if self.neighbors[k][2] <= 0:
 #                del self.neighbors[k]
 #            else:
 #                self.neighbors[k][2] -= 5
 
-    def send_one_update(self, destination):
+    def send_update(self, destination):
         """
         Find our vector for a given destination. We know that destination is reached from
         some port, so flood every port except that one. If poison mode is enabled, we send
