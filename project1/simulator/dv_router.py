@@ -22,6 +22,8 @@ class DVRouter (basics.DVRouterBase):
     You probably want to do some additional initialization here.
     """
     self.start_timer() # Starts calling handle_timer() at correct rate
+    self.vector = {}
+    self.neighbors = {}
 
   def handle_link_up (self, port, latency):
     """
@@ -29,6 +31,7 @@ class DVRouter (basics.DVRouterBase):
 
     The port attached to the link and the link latency are passed in.
     """
+    print "Link up on port ", port, "with latency ", latency, "with node ", api.get_name(self)
 
   def handle_link_down (self, port):
     """
@@ -47,6 +50,7 @@ class DVRouter (basics.DVRouterBase):
     You definitely want to fill this in.
     """
     #self.log("RX %s on %s (%s)", packet, port, api.current_time())
+    print api.get_name(self), " received packet from ", packet.src, " of type ", type(packet)
     if isinstance(packet, basics.RoutePacket):
       pass
     elif isinstance(packet, basics.HostDiscoveryPacket):
