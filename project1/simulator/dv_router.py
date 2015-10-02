@@ -49,7 +49,7 @@ class DVRouter (basics.DVRouterBase):
         neighbor_vector = self.neighbors[port] 
         for key in neighbor_vector.keys():
             if self.vector.get(key):
-                if POISON_MODE:
+                if self.POISON_MODE:
                     self.send_update(key)
                 del self.vector[key]
         del self.neighbors[port]
@@ -77,8 +77,10 @@ class DVRouter (basics.DVRouterBase):
                 self.send(packet, port=self.vector[packet.dst][1], flood=False)
                 
     def _handle_route_packet(self, packet, port):
-          self.neighbors[port][packet.destination] = [packet.latency + self.ports[port], port, 15]
-          self.update_vector(port, packet.destination)
+        if not self.neighbors.get(port):
+            self.neighbors[port] = {}
+        self.neighbors[port][packet.destination] = [packet.latency + self.ports[port], port, 15]
+        self.update_vector(port, packet.destination)
 
     def _handle_discovery_packet(self, packet, port):
           if self.vector.get(packet.src):
@@ -117,7 +119,7 @@ class DVRouter (basics.DVRouterBase):
         latency, port, ttl = self.vector[destination]
         packet = basics.RoutePacket(destination, latency)
         self.send(packet, port=port, flood=True)
-        if POISON_MODE:
+        if self.POISON_MODE:
             poison = basics.RoutePacket(destination, INFINITY)
             self.send(poison, port=port)
 
