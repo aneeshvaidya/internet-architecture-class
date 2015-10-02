@@ -15,55 +15,95 @@ class DVRouter (basics.DVRouterBase):
   #POISON_MODE = True # Can override POISON_MODE here
   #DEFAULT_TIMER_INTERVAL = 5 # Can override this yourself for testing
 
-  def __init__ (self):
-    """
-    Called when the instance is initialized.
+    def __init__ (self):
+        """
+        Called when the instance is initialized.
 
-    You probably want to do some additional initialization here.
-    """
-    self.start_timer() # Starts calling handle_timer() at correct rate
-    self.vector = {}
-    self.neighbors = {}
+        You probably want to do some additional initialization here.
+        """
+        self.start_timer() # Starts calling handle_timer() at correct rate
 
-  def handle_link_up (self, port, latency):
-    """
-    Called by the framework when a link attached to this Entity goes up.
+        # destination -> (latency, port, ttl)
+        self.vector = {}
+        # neighbor -> {destination -> (latency, port, ttl)}
+        self.neighbors = {}
+        # port -> latency
+        self.ports = {}
 
-    The port attached to the link and the link latency are passed in.
-    """
-    print "Link up on port ", port, "with latency ", latency, "with node ", api.get_name(self)
+    def handle_link_up (self, port, latency):
+        """
+        Called by the framework when a link attached to this Entity goes up.
 
-  def handle_link_down (self, port):
-    """
-    Called by the framework when a link attached to this Entity does down.
+        The port attached to the link and the link latency are passed in.
+        """
+        print "Link up on port ", port, "with latency ", latency, "with node ", api.get_name(self)
+        self.ports[port] = latency
 
-    The port number used by the link is passed in.
-    """
+    def handle_link_down (self, port):
+        """
+        Called by the framework when a link attached to this Entity does down.
 
-  def handle_rx (self, packet, port):
-    """
-    Called by the framework when this Entity receives a packet.
+        The port number used by the link is passed in.
+        """
 
-    packet is a Packet (or subclass).
-    port is the port number it arrived on.
+    def handle_rx (self, packet, port):
+        """
+        Called by the framework when this Entity receives a packet.
 
-    You definitely want to fill this in.
-    """
-    #self.log("RX %s on %s (%s)", packet, port, api.current_time())
-    print api.get_name(self), " received packet from ", packet.src, " of type ", type(packet)
-    if isinstance(packet, basics.RoutePacket):
-      pass
-    elif isinstance(packet, basics.HostDiscoveryPacket):
-      pass
-    else:
-      # Totally wrong behavior for the sake of demonstration only: send
-      # the packet back to where it came from!
-      self.send(packet, port=port)
+        packet is a Packet (or subclass).
+        port is the port number it arrived on.
 
-  def handle_timer (self):
-    """
-    Called periodically.
+        You definitely want to fill this in.
+        """
+        #self.log("RX %s on %s (%s)", packet, port, api.current_time())
+        print api.get_name(self), "received packet from ", packet.src, " of type ", type(packet)
+        #Gives us packet.destination, packet.latency, packet.src
+        if isinstance(packet, basics.RoutePacket):
+            print "Latency: ", packet.latency
+            print "Destination: ", packet.destination
+            self._handle_route_packet(packet, port)
+        elif isinstance(packet, basics.HostDiscoveryPacket):
+            self._handle_discovery_packet(packet, port)
+        else:
+            if self.vector.get(packet.dst):
+                self.send(packet, port=self.vector[packet.dst][1], flood=False)
+                
+    def _handle_route_packet(self, packet, port):
+          self.neighbors[packet.src][packet.destination] = [packet.latency + self.ports[port], port, 15]
+          self.update_vector()
 
-    When called, your router should send tables to neighbors.  It also might
-    not be a bad place to check for whether any entries have expired.
-    """
+    def _handle_discovery_packet(self, packet, port):
+          if self.vector.get(packet.src):
+              latency, port, hops = self.vector.get(packet.src)
+              if latency > self.ports[port] and hops < 16:
+                  self.vector[packet.src] = [self.ports[port], port, 15]
+          else:
+              self.vector[packet.src] = [self.ports[port], port, 15]
+          print self.vector
+
+    def handle_timer (self):
+        """
+        Called periodically.
+
+        When called, your router should send tables to neighbors.  It also might
+        not be a bad place to check for whether any entries have expired.
+        """
+        for k, v in self.vector.iteritems():
+            if self.vector[k][2] <= 0:
+                del self.vector[k]
+            else:
+                self.vector[k][2] -= 5
+                #send update
+        for k, v in self.neighbors.iteritems():
+            if self.neighbors[k][2] <= 0:
+                del self.neighbors[k]
+            else:
+                self.neighbors[k][2] -= 5
+
+    def update_vector(self):
+        """
+        Updates our instance vector to all reachable destinations.
+
+        Iterate through every neighbor vector. 
+        """
+        pass
