@@ -25,7 +25,7 @@ class DVRouter (basics.DVRouterBase):
 
         # destination -> (latency, port, ttl)
         self.vector = {}
-        # neighbor -> {destination -> (latency, port, ttl)}
+        # port -> {destination -> (latency, port, ttl)}
         self.neighbors = {}
         # port -> latency
         self.ports = {}
@@ -38,6 +38,7 @@ class DVRouter (basics.DVRouterBase):
         """
         print "Link up on port ", port, "with latency ", latency, "with node ", api.get_name(self)
         self.ports[port] = latency
+        #we should send updates here too, all vectors in self.vector
 
     def handle_link_down (self, port):
         """
@@ -45,6 +46,11 @@ class DVRouter (basics.DVRouterBase):
 
         The port number used by the link is passed in.
         """
+        neighbor_vector = self.neighbors[port] 
+        for key in neighbor_vector.keys():
+            if self.vector.get(key):
+                del self.vector[key]
+        del self.neighbors[port]
 
     def handle_rx (self, packet, port):
         """
@@ -69,8 +75,8 @@ class DVRouter (basics.DVRouterBase):
                 self.send(packet, port=self.vector[packet.dst][1], flood=False)
                 
     def _handle_route_packet(self, packet, port):
-          self.neighbors[packet.src][packet.destination] = [packet.latency + self.ports[port], port, 15]
-          self.update_vector(packet.src, packet.destination)
+          self.neighbors[port][packet.destination] = [packet.latency + self.ports[port], port, 15]
+          self.update_vector(port, packet.destination)
 
     def _handle_discovery_packet(self, packet, port):
           if self.vector.get(packet.src):
@@ -94,11 +100,11 @@ class DVRouter (basics.DVRouterBase):
             else:
                 self.vector[k][2] -= 5
                 self.send_one_update(k)
-        for k, v in self.neighbors.iteritems():
-            if self.neighbors[k][2] <= 0:
-                del self.neighbors[k]
-            else:
-                self.neighbors[k][2] -= 5
+#        for k, v in self.neighbors.iteritems():
+#            if self.neighbors[k][2] <= 0:
+#                del self.neighbors[k]
+#            else:
+#                self.neighbors[k][2] -= 5
 
     def send_one_update(self, destination):
         """
@@ -109,13 +115,13 @@ class DVRouter (basics.DVRouterBase):
         packet = basics.RoutePacket(destination, latency)
         self.send(packet, port=port, flood=True)
 
-    def update_vector(self, p_source, destination):
+    def update_vector(self, port, destination):
         """
         Updates our instance vector to all reachable destinations.
 
         Iterate through every neighbor vector. 
         """
-        neighbor_vector = self.neighbors[p_source][destination]
+        neighbor_vector = self.neighbors[port][destination]
         my_vector = self.vector.get(destination)
         if my_vector:
             if my_vector[0] > neighbor_vector[0] and neighbor_vector[0] < 16:
