@@ -98,7 +98,7 @@ class DVRouter (basics.DVRouterBase):
         When called, your router should send tables to neighbors.  It also might
         not be a bad place to check for whether any entries have expired.
         """
-        for k, v in self.vector.iteritems():
+        for k in self.vector.keys():
             if self.vector[k][2] <= 0:
                 del self.vector[k]
             else:
