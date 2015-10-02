@@ -109,11 +109,15 @@ class DVRouter (basics.DVRouterBase):
     def send_one_update(self, destination):
         """
         Find our vector for a given destination. We know that destination is reached from
-        some port, so flood every port except that one.
+        some port, so flood every port except that one. If poison mode is enabled, we send
+        on that port a poisoned reversed route
         """
         latency, port, ttl = self.vector[destination]
         packet = basics.RoutePacket(destination, latency)
         self.send(packet, port=port, flood=True)
+        if POISON_MODE:
+            poison = basics.RoutePacket(destination, INFINITY)
+            self.send(poison, port=port)
 
     def update_vector(self, port, destination):
         """
