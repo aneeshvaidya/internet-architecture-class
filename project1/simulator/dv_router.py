@@ -70,7 +70,7 @@ class DVRouter (basics.DVRouterBase):
                 
     def _handle_route_packet(self, packet, port):
           self.neighbors[packet.src][packet.destination] = [packet.latency + self.ports[port], port, 15]
-          self.update_vector()
+          self.update_vector(packet.src, packet.destination)
 
     def _handle_discovery_packet(self, packet, port):
           if self.vector.get(packet.src):
@@ -93,17 +93,33 @@ class DVRouter (basics.DVRouterBase):
                 del self.vector[k]
             else:
                 self.vector[k][2] -= 5
-                #send update
+                self.send_one_update(k)
         for k, v in self.neighbors.iteritems():
             if self.neighbors[k][2] <= 0:
                 del self.neighbors[k]
             else:
                 self.neighbors[k][2] -= 5
 
-    def update_vector(self):
+    def send_one_update(self, destination):
+        """
+        Find our vector for a given destination. We know that destination is reached from
+        some port, so flood every port except that one.
+        """
+        latency, port, ttl = self.vector[destination]
+        packet = basics.RoutePacket(destination, latency)
+        self.send(packet, port=port, flood=True)
+
+    def update_vector(self, p_source, destination):
         """
         Updates our instance vector to all reachable destinations.
 
         Iterate through every neighbor vector. 
         """
-        pass
+        neighbor_vector = self.neighbors[p_source][destination]
+        my_vector = self.vector.get(destination)
+        if my_vector:
+            if my_vector[0] > neighbor_vector[0] and neighbor_vector[0] < 16:
+                self.vector[destination] = neighbor_vector
+        else:
+            self.vector[destination] = neighbor_vector
+         
