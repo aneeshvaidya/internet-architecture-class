@@ -55,10 +55,10 @@ class LearningSwitch (api.Entity):
     # But it's up to you to implement that.  For now, we just implement a
     # simple hub.
 
-    #if isinstance(packet, basics.HostDiscoveryPacket):
+    if isinstance(packet, basics.HostDiscoveryPacket):
       # Don't forward discovery messages
-     # return
-    if packet.dst in self.table.keys():
+      return
+    elif packet.dst in self.table.keys():
         self.send(packet, self.table[packet.dst], flood=False)
     else:
         self.table[packet.src] = in_port
