@@ -13,9 +13,9 @@ INFINITY = 16
 
 
 class DVRouter (basics.DVRouterBase):
-  NO_LOG = True # Set to True on an instance to disable its logging
-  POISON_MODE = True # Can override POISON_MODE here
-  DEFAULT_TIMER_INTERVAL = 5 # Can override this yourself for testing
+    NO_LOG = True # Set to True on an instance to disable its logging
+    POISON_MODE = False# Can override POISON_MODE here
+    DEFAULT_TIMER_INTERVAL = 5 # Can override this yourself for testing
 
     def __init__ (self):
         """
@@ -53,11 +53,10 @@ class DVRouter (basics.DVRouterBase):
         The port number used by the link is passed in.
         """
         neighbor_vector = self.neighbors[port] 
-        for key in neighbor_vector.keys():
-            if self.vector.get(key):
-                if self.POISON_MODE:
-                    self.send_update(key)                               # not clear.  have to set 16, update me, send update
-                del self.vector[key]
+        for dest in neighbor_vector.keys():
+            l, p, t = neighbor_vector[dest]
+            neighbor_vector[dest] = (INFINITY, p, t)
+            self.update_vector_all()
         del self.neighbors[port]
 
     def handle_rx (self, packet, port):
@@ -80,7 +79,8 @@ class DVRouter (basics.DVRouterBase):
             self._handle_discovery_packet(packet, port)
         else:
             if self.vector.get(packet.dst):
-                self.send(packet, port=self.vector[packet.dst][1], flood=False)
+                if port != self.vector[packet.dst][1]:
+                    self.send(packet, port=self.vector[packet.dst][1], flood=False)
                 
     def _handle_route_packet(self, packet, port):
         if port not in self.neighbors.keys():
@@ -104,17 +104,9 @@ class DVRouter (basics.DVRouterBase):
         When called, your router should send tables to neighbors.  It also might
         not be a bad place to check for whether any entries have expired.
         """
-        self.increment_ttl()
-        self.update_vector_all()
+        self.increment_ttl()   #increments ttl on all vectors and expires routes
+        self.update_vector_all() #updates vector according to expired routes
         
-        
-        for k in self.vector.keys():
-            if self.vector[k][2] > 15:
-                del self.vector[k]              # send update?
-            else:
-                self.vector[k][2] += self.DEFAULT_TIMER_INTERVAL
-                self.send_update(k)
-
 
     def send_update(self, destination):
         """
@@ -135,6 +127,7 @@ class DVRouter (basics.DVRouterBase):
 
         Iterate through every neighbor vector. 
         """
+        print "Updating one vector for ", api.get_name(self)
         neighbor_vector = self.neighbors[port][destination]
         my_vector = self.vector.get(destination)
         if my_vector:
@@ -145,19 +138,31 @@ class DVRouter (basics.DVRouterBase):
             self.vector[destination] = neighbor_vector
             
     def increment_ttl(self):            # increment ttl for neigbor vectors
-        for n in self.ports.keys():
-            neighbor = self.neighbors.get(n)
-            for dest in self.neighbor.keys():
-                l,p,t = neighbor[dest]
-                heighbor[dest] = (l,p,t + self.DEFAULT_TIMER_INTERVAL)
+        for n in self.neighbors.keys():
+        #    neighbor = self.neighbors.get(n)
+            for dest in self.neighbors[n].keys():
+                l,p,t = self.neighbors[n][dest] 
+                if t >= 0:
+                    self.neighbors[n][dest] = (l,p,t + self.DEFAULT_TIMER_INTERVAL)
+                if self.neighbors[n][dest][2] >= INFINITY:
+                    del self.neighbors[n][dest]
                 
         for dest in self.vector.keys():
-            l,p,t = vector[dest]
-            vector[dest] = (l,p,t + self.DEFAULT_TIMER_INTERVAL)
-                
-    def update_vector_all(self):
-    
-        for dest in self.vector.keys():
+            l,p,t = self.vector[dest]
+            if t >=0:
+                self.vector[dest] = (l,p,t + self.DEFAULT_TIMER_INTERVAL)
+            if self.vector[dest][2] >= INFINITY:
+                del self.vector[dest]
         
+        print api.get_name(self), "'s vector: ", self.vector
                 
+    def update_vector_all(self): 
+        if not self.neighbors:
+            for dest in self.vector.keys():
+                self.send_update(dest)
+        for port in self.neighbors.keys():
+            for dest in self.neighbors[port].keys():
+                self.update_vector_one(port, dest)
+    
+
          

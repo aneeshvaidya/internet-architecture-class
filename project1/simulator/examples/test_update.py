@@ -38,11 +38,13 @@ def launch ():
 
   s1 = sim.config.default_switch_type.create("s1")
   s2 = sim.config.default_switch_type.create("s2")
+  s3 = sim.config.default_switch_type.create("s3")
 
   h1.linkTo(s1)
   h2.linkTo(s2)
 
-  s1.linkTo(s2)
+  s2.linkTo(s3)
+  s1.linkTo(s3)
 
   def test_tasklet ():
     yield 5 # Wait five seconds for routing to converge
