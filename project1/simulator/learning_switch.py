@@ -30,13 +30,14 @@ class LearningSwitch (api.Entity):
     self.table = {} 
 
 
-  def handle_port_down (self, port):
+  def handle_link_down (self, port):
     """
     Called when a port goes down (because a link is removed)
 
     You probably want to remove table entries which are no longer valid here.
     """
-    to_del = [k for k, v in d.iteritems() if v == port]
+    print "Link is down on port ", port
+    to_del = [k for k, v in self.table.iteritems() if v == port]
     for key in to_del:
         del self.table[key]
         
@@ -54,13 +55,17 @@ class LearningSwitch (api.Entity):
     # a packet with that host as the *destination*, we know where to send it!
     # But it's up to you to implement that.  For now, we just implement a
     # simple hub.
-
+    print "------------------------------------------------" 
+    print "Handling packets to router: ", api.get_name(self)
     if isinstance(packet, basics.HostDiscoveryPacket):
-      # Don't forward discovery messages
-      return
-    elif packet.dst in self.table.keys():
-        self.send(packet, self.table[packet.dst], flood=False)
+        print "HostDiscoveryPacket from ", packet.src
+        self.table[packet.src] = in_port
     else:
         self.table[packet.src] = in_port
-        # Flood out all ports except the input port
-        self.send(packet, in_port, flood=True)
+        if packet.dst in self.table.keys():
+            print "Sending packet from ", packet.src, "to ", packet.dst, " through port ", self.table[packet.dst]
+            self.send(packet, self.table[packet.dst])
+        else:
+            print "Flooding packet from ", packet.src, " across all ports except ", in_port 
+            self.send(packet, in_port, flood=True)
+    print self.table

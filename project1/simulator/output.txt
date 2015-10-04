@@ -1,0 +1,387 @@
+CS-168 Network Simulator
+You can get help on a lot of things.
+For example, if you loaded a module called foo, try help(foo).
+If you have a host named h1a, try help(h1a).
+If you want to inspect a method of that host, try help(h1a.ping).
+For help about the simulator and its API, try help(sim) and help(api).
+Type start() to start the simulator (or pass --start).
+Ctrl-D or exit() exits.
+Good luck!
+------------------------------------------------
+Handling packets to router:  s1
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s2
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 0}
+------------------------------------------------
+Handling packets to router:  s2
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 0, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s3
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s1
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s5
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 1}
+------------------------------------------------
+Handling packets to router:  s5
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s4
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s3
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 0, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s4
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s4
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s5
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s4
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 0, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s3
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s3
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s2
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 0, <GetPacketHost h1>: 2}
+------------------------------------------------
+Handling packets to router:  s5
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 0, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s1
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 2, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s1
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 2, <GetPacketHost h1>: 2}
+------------------------------------------------
+Handling packets to router:  s1
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 2, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s2
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 2, <GetPacketHost h1>: 2}
+------------------------------------------------
+Handling packets to router:  s2
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 2}
+------------------------------------------------
+Handling packets to router:  s2
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s3
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s1
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s5
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s5
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s4
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 0, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s3
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 0, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s4
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s4
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s5
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s4
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 0, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s3
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s3
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s2
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 2}
+------------------------------------------------
+Handling packets to router:  s5
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 0, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s1
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 2, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s1
+Sending packet from  <GetPacketHost h1> to  <GetPacketHost h2>  through port  2
+{<GetPacketHost h2>: 2, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s1
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 2, <GetPacketHost h1>: 2}
+------------------------------------------------
+Handling packets to router:  s1
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 2, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s2
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 2, <GetPacketHost h1>: 2}
+------------------------------------------------
+Handling packets to router:  s2
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 2}
+------------------------------------------------
+Handling packets to router:  s3
+Sending packet from  <GetPacketHost h1> to  <GetPacketHost h2>  through port  1
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s2
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s3
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s1
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s5
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s4
+Sending packet from  <GetPacketHost h1> to  <GetPacketHost h2>  through port  0
+{<GetPacketHost h2>: 0, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s5
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s4
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 0, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s3
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 0, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s4
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s3
+Sending packet from  <GetPacketHost h1> to  <GetPacketHost h2>  through port  0
+{<GetPacketHost h2>: 0, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s4
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s5
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s4
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 0, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s3
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s1
+Sending packet from  <GetPacketHost h1> to  <GetPacketHost h2>  through port  1
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 2}
+------------------------------------------------
+Handling packets to router:  s3
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s2
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 2}
+------------------------------------------------
+Handling packets to router:  s5
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 0, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s1
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 2, <GetPacketHost h1>: 2}
+------------------------------------------------
+Handling packets to router:  s2
+Sending packet from  <GetPacketHost h1> to  <GetPacketHost h2>  through port  1
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s1
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 2, <GetPacketHost h1>: 2}
+------------------------------------------------
+Handling packets to router:  s1
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 2, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s2
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 2, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s2
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s1
+Sending packet from  <GetPacketHost h1> to  <GetPacketHost h2>  through port  2
+{<GetPacketHost h2>: 2, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s2
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s3
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s1
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s5
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s3
+Sending packet from  <GetPacketHost h1> to  <GetPacketHost h2>  through port  1
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s5
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s4
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 0, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s3
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 0, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s4
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s4
+Sending packet from  <GetPacketHost h1> to  <GetPacketHost h2>  through port  1
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+Link is down on port  1
+Link is down on port  1
+------------------------------------------------
+Handling packets to router:  s4
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s5
+HostDiscoveryPacket from  <GetPacketHost h1>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s4
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 0, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s3
+HostDiscoveryPacket from  <GetPacketHost h2>
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s5
+Sending packet from  <GetPacketHost h1> to  <GetPacketHost h2>  through port  1
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s2
+Flooding packet from  <GetPacketHost h1>  across all ports except  2
+{<GetPacketHost h1>: 2}
+------------------------------------------------
+Handling packets to router:  s1
+Flooding packet from  <GetPacketHost h1>  across all ports except  0
+{<GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s3
+Sending packet from  <GetPacketHost h1> to  <GetPacketHost h2>  through port  1
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s4
+Sending packet from  <GetPacketHost h1> to  <GetPacketHost h2>  through port  0
+{<GetPacketHost h2>: 0, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s3
+Sending packet from  <GetPacketHost h1> to  <GetPacketHost h2>  through port  1
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s4
+Sending packet from  <GetPacketHost h1> to  <GetPacketHost h2>  through port  0
+{<GetPacketHost h2>: 0, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s3
+Sending packet from  <GetPacketHost h1> to  <GetPacketHost h2>  through port  1
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s4
+Sending packet from  <GetPacketHost h1> to  <GetPacketHost h2>  through port  0
+{<GetPacketHost h2>: 0, <GetPacketHost h1>: 0}
+------------------------------------------------
+Handling packets to router:  s3
+Sending packet from  <GetPacketHost h1> to  <GetPacketHost h2>  through port  1
+{<GetPacketHost h2>: 1, <GetPacketHost h1>: 1}
+------------------------------------------------
+Handling packets to router:  s4
+Sending packet from  <GetPacketHost h1> to  <GetPacketHost h2>  through port  0
+{<GetPacketHost h2>: 0, <GetPacketHost h1>: 0}

@@ -36,7 +36,7 @@ class DVRouter (basics.DVRouterBase):
 
         The port attached to the link and the link latency are passed in.
         """
-        print "Link up on port ", port, "with latency ", latency, "with node ", api.get_name(self)
+        #print "Link up on port ", port, "with latency ", latency, "with node ", api.get_name(self)
         self.ports[port] = latency
         #we should send updates here too, all vectors in self.vector
 
@@ -64,11 +64,11 @@ class DVRouter (basics.DVRouterBase):
         You definitely want to fill this in.
         """
         #self.log("RX %s on %s (%s)", packet, port, api.current_time())
-        print api.get_name(self), "received packet from ", packet.src, " of type ", type(packet)
+        #print api.get_name(self), "received packet from ", packet.src, " of type ", type(packet)
         #Gives us packet.destination, packet.latency, packet.src
         if isinstance(packet, basics.RoutePacket):
-            print "Latency: ", packet.latency
-            print "Destination: ", packet.destination
+#            print "Latency: ", packet.latency
+#            print "Destination: ", packet.destination
             self._handle_route_packet(packet, port)
         elif isinstance(packet, basics.HostDiscoveryPacket):
             self._handle_discovery_packet(packet, port)
