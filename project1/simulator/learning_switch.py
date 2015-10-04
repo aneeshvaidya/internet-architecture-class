@@ -5,7 +5,6 @@ Start it up with a commandline like...
 
   ./simulator.py --default-switch-type=learning_switch topos.rand --links=0
 """
-
 import sim.api as api
 import sim.basics as basics
 
