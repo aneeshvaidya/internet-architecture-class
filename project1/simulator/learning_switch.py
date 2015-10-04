@@ -57,15 +57,11 @@ class LearningSwitch (api.Entity):
     # simple hub.
 #    print "------------------------------------------------" 
 #    print "Handling packets to router: ", api.get_name(self)
-    if isinstance(packet, basics.HostDiscoveryPacket):
-#        print "HostDiscoveryPacket from ", packet.src
-        self.table[packet.src] = in_port
-    else:
-        self.table[packet.src] = in_port
-        if packet.dst in self.table.keys(): 
+    self.table[packet.src] = in_port    
+    if packet.dst in self.table.keys(): 
 #            print "Sending packet from ", packet.src, "to ", packet.dst, " through port ", self.table[packet.dst]
-            self.send(packet, self.table[packet.dst])
-        else:
+        self.send(packet, self.table[packet.dst])
+    else:
 #            print "Flooding packet from ", packet.src, " across all ports except ", in_port 
-            self.send(packet, in_port, flood=True)
+        self.send(packet, in_port, flood=True)
 #    print self.table

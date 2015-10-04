@@ -5,15 +5,17 @@ Your awesome Distance Vector router for CS 168
 import sim.api as api
 import sim.basics as basics
 
+import pdb
+
 
 # We define infinity as a distance of 16.
 INFINITY = 16
 
 
 class DVRouter (basics.DVRouterBase):
-  #NO_LOG = True # Set to True on an instance to disable its logging
-  #POISON_MODE = True # Can override POISON_MODE here
-  #DEFAULT_TIMER_INTERVAL = 5 # Can override this yourself for testing
+  NO_LOG = True # Set to True on an instance to disable its logging
+  POISON_MODE = True # Can override POISON_MODE here
+  DEFAULT_TIMER_INTERVAL = 5 # Can override this yourself for testing
 
     def __init__ (self):
         """
@@ -41,6 +43,8 @@ class DVRouter (basics.DVRouterBase):
         for dst in self.vector.keys():
             self.send_update(dst)
         #we should send updates here too, all vectors in self.vector
+        
+        # only to new port?
 
     def handle_link_down (self, port):
         """
@@ -52,7 +56,7 @@ class DVRouter (basics.DVRouterBase):
         for key in neighbor_vector.keys():
             if self.vector.get(key):
                 if self.POISON_MODE:
-                    self.send_update(key)
+                    self.send_update(key)                               # not clear.  have to set 16, update me, send update
                 del self.vector[key]
         del self.neighbors[port]
 
@@ -81,16 +85,16 @@ class DVRouter (basics.DVRouterBase):
     def _handle_route_packet(self, packet, port):
         if port not in self.neighbors.keys():
             self.neighbors[port] = {}
-        self.neighbors[port][packet.destination] = [packet.latency + self.ports[port], port, 15]
-        self.update_vector(port, packet.destination)
+        self.neighbors[port][packet.destination] = [packet.latency + self.ports[port], port, 0]
+        self.update_vector_one(port, packet.destination)
 
     def _handle_discovery_packet(self, packet, port):
         if packet.src in self.vector.keys():
-            latency, port, hops = self.vector.get(packet.src)
-            if latency > self.ports[port] and hops < 16:
-                self.vector[packet.src] = [self.ports[port], port, 15]
+            latency, port, ttl = self.vector.get(packet.src)
+            if latency > self.ports[port]:
+                self.vector[packet.src] = [self.ports[port], port, -1]
         else:
-            self.vector[packet.src] = [self.ports[port], port, 15]
+            self.vector[packet.src] = [self.ports[port], port, -1]
             print self.vector
 
     def handle_timer (self):
@@ -100,17 +104,17 @@ class DVRouter (basics.DVRouterBase):
         When called, your router should send tables to neighbors.  It also might
         not be a bad place to check for whether any entries have expired.
         """
+        self.increment_ttl()
+        self.update_vector_all()
+        
+        
         for k in self.vector.keys():
-            if self.vector[k][2] <= 0:
-                del self.vector[k]
+            if self.vector[k][2] > 15:
+                del self.vector[k]              # send update?
             else:
-                self.vector[k][2] -= 5
+                self.vector[k][2] += self.DEFAULT_TIMER_INTERVAL
                 self.send_update(k)
-#        for k, v in self.neighbors.iteritems():
-#            if self.neighbors[k][2] <= 0:
-#                del self.neighbors[k]
-#            else:
-#                self.neighbors[k][2] -= 5
+
 
     def send_update(self, destination):
         """
@@ -125,7 +129,7 @@ class DVRouter (basics.DVRouterBase):
             poison = basics.RoutePacket(destination, INFINITY)
             self.send(poison, port=port)
 
-    def update_vector(self, port, destination):
+    def update_vector_one(self, port, destination):
         """
         Updates our instance vector to all reachable destinations.
 
@@ -139,4 +143,21 @@ class DVRouter (basics.DVRouterBase):
                 self.send_update(destination)
         else:
             self.vector[destination] = neighbor_vector
+            
+    def increment_ttl(self):            # increment ttl for neigbor vectors
+        for n in self.ports.keys():
+            neighbor = self.neighbors.get(n)
+            for dest in self.neighbor.keys():
+                l,p,t = neighbor[dest]
+                heighbor[dest] = (l,p,t + self.DEFAULT_TIMER_INTERVAL)
+                
+        for dest in self.vector.keys():
+            l,p,t = vector[dest]
+            vector[dest] = (l,p,t + self.DEFAULT_TIMER_INTERVAL)
+                
+    def update_vector_all(self):
+    
+        for dest in self.vector.keys():
+        
+                
          
