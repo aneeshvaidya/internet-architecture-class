@@ -38,6 +38,8 @@ class DVRouter (basics.DVRouterBase):
         """
         #print "Link up on port ", port, "with latency ", latency, "with node ", api.get_name(self)
         self.ports[port] = latency
+        for dst in self.vector.keys():
+            self.send_update(dst)
         #we should send updates here too, all vectors in self.vector
 
     def handle_link_down (self, port):
@@ -77,19 +79,19 @@ class DVRouter (basics.DVRouterBase):
                 self.send(packet, port=self.vector[packet.dst][1], flood=False)
                 
     def _handle_route_packet(self, packet, port):
-        if not self.neighbors.get(port):
+        if port not in self.neighbors.keys():
             self.neighbors[port] = {}
         self.neighbors[port][packet.destination] = [packet.latency + self.ports[port], port, 15]
         self.update_vector(port, packet.destination)
 
     def _handle_discovery_packet(self, packet, port):
-          if self.vector.get(packet.src):
-              latency, port, hops = self.vector.get(packet.src)
-              if latency > self.ports[port] and hops < 16:
-                  self.vector[packet.src] = [self.ports[port], port, 15]
-          else:
-              self.vector[packet.src] = [self.ports[port], port, 15]
-          print self.vector
+        if packet.src in self.vector.keys():
+            latency, port, hops = self.vector.get(packet.src)
+            if latency > self.ports[port] and hops < 16:
+                self.vector[packet.src] = [self.ports[port], port, 15]
+        else:
+            self.vector[packet.src] = [self.ports[port], port, 15]
+            print self.vector
 
     def handle_timer (self):
         """

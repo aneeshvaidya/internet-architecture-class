@@ -55,17 +55,17 @@ class LearningSwitch (api.Entity):
     # a packet with that host as the *destination*, we know where to send it!
     # But it's up to you to implement that.  For now, we just implement a
     # simple hub.
-    print "------------------------------------------------" 
-    print "Handling packets to router: ", api.get_name(self)
+#    print "------------------------------------------------" 
+#    print "Handling packets to router: ", api.get_name(self)
     if isinstance(packet, basics.HostDiscoveryPacket):
-        print "HostDiscoveryPacket from ", packet.src
+#        print "HostDiscoveryPacket from ", packet.src
         self.table[packet.src] = in_port
     else:
         self.table[packet.src] = in_port
-        if packet.dst in self.table.keys():
-            print "Sending packet from ", packet.src, "to ", packet.dst, " through port ", self.table[packet.dst]
+        if packet.dst in self.table.keys(): 
+#            print "Sending packet from ", packet.src, "to ", packet.dst, " through port ", self.table[packet.dst]
             self.send(packet, self.table[packet.dst])
         else:
-            print "Flooding packet from ", packet.src, " across all ports except ", in_port 
+#            print "Flooding packet from ", packet.src, " across all ports except ", in_port 
             self.send(packet, in_port, flood=True)
-    print self.table
+#    print self.table
