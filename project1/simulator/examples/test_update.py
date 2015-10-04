@@ -47,7 +47,7 @@ def launch ():
   s1.linkTo(s3)
 
   def test_tasklet ():
-    yield 5 # Wait five seconds for routing to converge
+    yield 11 # Wait five seconds for routing to converge
     
     api.userlog.debug("Sending test ping 1")
     h1.ping(h2)
@@ -60,6 +60,7 @@ def launch ():
     yield 5 # Wait five seconds for pings to be delivered
 
     if h2.pings != 2:
+        api.userlog.debug("Pings received: " + str(h2.pings))
         api.userlog.debug("FAILED")
     else:
         api.userlog.debug("Tests passed")

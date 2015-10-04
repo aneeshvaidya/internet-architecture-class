@@ -52,10 +52,14 @@ class DVRouter (basics.DVRouterBase):
 
         The port number used by the link is passed in.
         """
+        print "Port down: ", port
         neighbor_vector = self.neighbors[port] 
         for dest in neighbor_vector.keys():
             l, p, t = neighbor_vector[dest]
             neighbor_vector[dest] = (INFINITY, p, t)
+            if self.vector.get(dest):
+                l, p, t = self.vector[dest]
+                self.vector[dest] = (INFINITY, p, t)
             self.update_vector_all()
         del self.neighbors[port]
 
@@ -95,7 +99,6 @@ class DVRouter (basics.DVRouterBase):
                 self.vector[packet.src] = [self.ports[port], port, -1]
         else:
             self.vector[packet.src] = [self.ports[port], port, -1]
-            print self.vector
 
     def handle_timer (self):
         """
@@ -127,16 +130,17 @@ class DVRouter (basics.DVRouterBase):
 
         Iterate through every neighbor vector. 
         """
-        print "Updating one vector for ", api.get_name(self)
+        #print "Updating one vector for ", api.get_name(self)
         neighbor_vector = self.neighbors[port][destination]
         my_vector = self.vector.get(destination)
         if my_vector:
-            if my_vector[0] > neighbor_vector[0] and neighbor_vector[0] < 16:
+            if not neighbor_vector:
+                self.send_update(destination)
+            elif my_vector[0] + self.ports[port]> neighbor_vector[0] and neighbor_vector[0] < 16:
                 self.vector[destination] = neighbor_vector
                 self.send_update(destination)
         else:
             self.vector[destination] = neighbor_vector
-            
     def increment_ttl(self):            # increment ttl for neigbor vectors
         for n in self.neighbors.keys():
         #    neighbor = self.neighbors.get(n)
@@ -153,6 +157,7 @@ class DVRouter (basics.DVRouterBase):
                 self.vector[dest] = (l,p,t + self.DEFAULT_TIMER_INTERVAL)
             if self.vector[dest][2] >= INFINITY:
                 del self.vector[dest]
+                print "Neighbors: ", self.neighbors
         
         print api.get_name(self), "'s vector: ", self.vector
                 
