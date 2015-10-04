@@ -136,6 +136,7 @@ class DVRouter (basics.DVRouterBase):
         if my_vector:
             if my_vector[0] > neighbor_vector[0] and neighbor_vector[0] < 16:
                 self.vector[destination] = neighbor_vector
+                self.send_update(destination)
         else:
             self.vector[destination] = neighbor_vector
          

@@ -49,7 +49,6 @@ def launch ():
     yield 5 # Wait five seconds for routing to converge
 
     api.userlog.debug("Sending test pings")
-    api.userlog.debug(r.table)
     h2.ping(h1)
     h2.ping(h4)
 
