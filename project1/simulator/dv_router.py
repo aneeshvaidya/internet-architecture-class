@@ -171,18 +171,17 @@ class DVRouter (basics.DVRouterBase):
         Iterate through every neighbor vector. 
         """
         #print "Updating one vector for ", api.get_name(self)
-        #if api.get_name(self) == "s3": pdb.set_trace()
+        #if api.get_name(self) == "s1" and not self.ports.get(1): pdb.set_trace()
         is_updated = False
         
         l,p,t = self.vector.get(dest)
         for n in self.neighbors.keys():
             neighbor_vector = self.neighbors[n].get(dest)
-            lat = self.ports.get(p)
-            if neighbor_vector and lat:
+            if neighbor_vector:
                 nl,np,nt = neighbor_vector
-                if l > neighbor_vector[0] + lat:
+                if l > neighbor_vector[0] + n:
                     #print "Updated " + str(self.vector[dest]) + " to " + str(neighbor_vector)
-                    self.vector[dest] = (nl + lat, np, nt)
+                    self.vector[dest] = (nl + n, np, nt)
                     is_updated = True
         
         # trying to lower ttl of vector destination if reciving update from neighbor

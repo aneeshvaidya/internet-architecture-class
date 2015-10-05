@@ -47,23 +47,23 @@ def launch ():
   s5.linkTo(s2)
 
   def test_tasklet ():
-    yield 10 # Wait five seconds for routing to converge
+    yield 5 # Wait five seconds for routing to converge
 
     api.userlog.debug("Sending test ping 1")
     h1.ping(h2)
 
-    yield 10
+    yield 5
 
     api.userlog.debug("Failing s1-s2 link ")
     #pdb.set_trace()
     s1.unlinkTo(s2)
 
-    yield 20
+    yield 10
 
     api.userlog.debug("Sending test ping 2")
     h1.ping(h2)
     #pdb.set_trace()
-    yield 20
+    yield 10
 
     if h2.pings != 2:
       api.userlog.error("h2 got %s packets instead of 2", h2.pings)
