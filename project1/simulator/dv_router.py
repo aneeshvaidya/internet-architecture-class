@@ -131,6 +131,17 @@ class DVRouter (basics.DVRouterBase):
             neighbor = self.neighbors[port]
             for dest in neighbor.keys():
                 l, p, t = neighbor[dest]
+                self.neighbors[port][dest] = [l, p, t + DVRouter.DEFAULT_TIMER_INTERVAL]
+                if self.neighbors[port][dest][2] >= 15:
+                    del self.neighbors[port][dest]
+        for dest in self.vector.keys():
+            l, p, t = self.vector[dest]
+            self.vector[dest] = [l, p, t + DVRouter.DEFAULT_TIMER_INTERVAL]
+            if self.vector[dest][2] >= 15:
+                self.vector[dest][0] = INFINITY
+                self.send_one_table(dest)
+                del self.vector[dest]
+                    
 
     def update_all_tables(self):
         """
@@ -145,17 +156,19 @@ class DVRouter (basics.DVRouterBase):
             for dest in neighbor.keys():
                 n_v = neighbor[dest] #neighbor_vector = n_v
                 if dest not in self.vector.keys() and n_v[0] < INFINITY:
-                    self.vector[dest] = n_v 
+                    self.vector[dest] = [n_v[0] + self.ports[port], port, 0]  
                 #If distance is infinity and we route through this port, it
                 #must be a dead route
                 elif n_v[0] == INFINITY and self.vector.get(dest)[1] == n_v[1]: 
                     del self.vector[dest]
                     self.update_one_table(dest)
-                else:
+                elif dest in self.vector.keys():
                     l, p, t = self.vector[dest]
                     if l > n_v[1] + self.ports[n_v[1]] and n_v[2] < INFINITY:
-                        self.vector[dest] = n_v 
+                        self.vector[dest] = [n_v[0] + self.ports[port], port, 0] 
                         updated.append(dest)
+                else:
+                    pass
         for dest in updated:
             self.send_one_table(dest)
 
@@ -169,7 +182,8 @@ class DVRouter (basics.DVRouterBase):
                 n_v = self.neighbors[port][destination]
                 curr_v = self.vector[destination]
                 if curr_v[0] > n_v[0] + self.ports[n_v[1]] and n_v[0] < INFINITY:
-                    self.vector[destination] = n_v
+                    l, p, t = n_v
+                    self.vector[destination] = [l + self.ports[port], p, 0]
 
     def send_all_tables(self):
         """
