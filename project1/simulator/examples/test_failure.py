@@ -55,7 +55,7 @@ def launch ():
     api.userlog.debug("Failing s1-s2 link")
     s1.unlinkTo(s2)
 
-    yield 10
+    yield 20
 
     api.userlog.debug("Sending test ping 2")
     h1.ping(h2)

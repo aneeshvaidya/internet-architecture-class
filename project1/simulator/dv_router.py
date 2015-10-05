@@ -10,18 +10,18 @@ import sim.basics as basics
 INFINITY = 16
 
 
-class DVRouter (basics.DVRouterBase):
-  #NO_LOG = True # Set to True on an instance to disable its logging
-  #POISON_MODE = True # Can override POISON_MODE here
-  #DEFAULT_TIMER_INTERVAL = 5 # Can override this yourself for testing
+class DVRouter(basics.DVRouterBase):
+    # NO_LOG = True # Set to True on an instance to disable its logging
+    # POISON_MODE = True # Can override POISON_MODE here
+    # DEFAULT_TIMER_INTERVAL = 5 # Can override this yourself for testing
 
-    def __init__ (self):
+    def __init__(self):
         """
         Called when the instance is initialized.
 
         You probably want to do some additional initialization here.
         """
-        self.start_timer() # Starts calling handle_timer() at correct rate
+        self.start_timer()  # Starts calling handle_timer() at correct rate
         # port -> latency
         self.ports = {}
         # destination -> (latency, port, ttl)
@@ -29,7 +29,7 @@ class DVRouter (basics.DVRouterBase):
         # port -> {destination -> (latency, port, ttl)}
         self.neighbors = {}
 
-    def handle_link_up (self, port, latency):
+    def handle_link_up(self, port, latency):
         """
         Called by the framework when a link attached to this Entity goes up.
         The port attached to the link and the link latency are passed in.
@@ -39,9 +39,9 @@ class DVRouter (basics.DVRouterBase):
         """
         self.ports[port] = latency
         self.send_all_tables()
-        #send tables here
+        # send tables here
 
-    def handle_link_down (self, port):
+    def handle_link_down(self, port):
         """
         Called by the framework when a link attached to this Entity does down.
 
@@ -54,8 +54,7 @@ class DVRouter (basics.DVRouterBase):
         self.send_all_tables()
         del self.neighbors[port]
 
-
-    def handle_rx (self, packet, port):
+    def handle_rx(self, packet, port):
         """
         Called by the framework when this Entity receives a packet.
 
@@ -64,7 +63,7 @@ class DVRouter (basics.DVRouterBase):
 
         You definitely want to fill this in.
         """
-        #self.log("RX %s on %s (%s)", packet, port, api.current_time())
+        # self.log("RX %s on %s (%s)", packet, port, api.current_time())
         if isinstance(packet, basics.RoutePacket):
             self.handle_route_packet(packet, port)
         elif isinstance(packet, basics.HostDiscoveryPacket):
@@ -75,7 +74,6 @@ class DVRouter (basics.DVRouterBase):
                 dst = packet.dst
                 if port != self.vector[dst][1] and self.vector[dst][0] < INFINITY:
                     self.send(packet, port=self.vector[packet.dst][1])
-          
 
     def handle_discovery_packet(self, packet, port):
         """
@@ -108,11 +106,10 @@ class DVRouter (basics.DVRouterBase):
         if port not in self.neighbors.keys():
             self.neighbors[port] = {}
         self.neighbors[port][packet.destination] = [packet.latency + self.ports[port], port, 0]
-        #self.update_one_table(packet.destination)
+        # self.update_one_table(packet.destination)
         self.update_all_tables()
 
-
-    def handle_timer (self):
+    def handle_timer(self):
         """
         Called periodically.
 
@@ -140,7 +137,6 @@ class DVRouter (basics.DVRouterBase):
             if self.vector[dest][2] >= 15:
                 del self.vector[dest]
                 self.update_one_table(dest)
-                    
 
     def update_all_tables(self):
         """
@@ -153,25 +149,24 @@ class DVRouter (basics.DVRouterBase):
         for port in self.neighbors.keys():
             neighbor = self.neighbors[port]
             for dest in neighbor.keys():
-                n_v = neighbor[dest] #neighbor_vector = n_v
+                n_v = neighbor[dest]  # neighbor_vector = n_v
                 if dest not in self.vector.keys() and n_v[0] < INFINITY:
                     self.vector[dest] = [n_v[0] + self.ports[port], port, 0]
                     updated.append(dest)
-                #If distance is infinity and we route through this port, it
-                #must be a dead route
-                elif n_v[0] == INFINITY and self.vector.get(dest)[1] == n_v[1]: 
+                # If distance is infinity and we route through this port, it
+                # must be a dead route
+                elif n_v[0] == INFINITY and self.vector.get(dest)[1] == n_v[1]:
                     del self.vector[dest]
                     self.update_one_table(dest)
                 elif dest in self.vector.keys():
                     l, p, t = self.vector[dest]
                     if l > n_v[1] + self.ports[n_v[1]] and n_v[2] < INFINITY:
-                        self.vector[dest] = [n_v[0] + self.ports[port], port, 0] 
+                        self.vector[dest] = [n_v[0] + self.ports[port], port, 0]
                         updated.append(dest)
                 else:
                     pass
         for dest in updated:
             self.send_one_table(dest)
-
 
     def update_one_table(self, destination):
         """
@@ -181,13 +176,17 @@ class DVRouter (basics.DVRouterBase):
         for port in self.neighbors.keys():
             if destination in self.neighbors[port]:
                 n_v = self.neighbors[port][destination]
-                curr_v = self.vector[destination]
-                if curr_v[0] > n_v[0] + self.ports[n_v[1]] and n_v[0] < INFINITY:
+                curr_v = self.vector.get(destination)
+                if not curr_v:
+                    updated = True
+                    l, p, t = n_v
+                    self.vector[destination] = [l + self.ports[port], p, 0]
+                elif curr_v[0] > n_v[0] + self.ports[n_v[1]] and n_v[0] < INFINITY:
                     updated = True
                     l, p, t = n_v
                     self.vector[destination] = [l + self.ports[port], p, 0]
         if updated:
-            self.send_one_update(destination)
+            self.send_one_table(destination)
 
     def send_all_tables(self):
         """
@@ -203,7 +202,6 @@ class DVRouter (basics.DVRouterBase):
             packet = basics.RoutePacket(dest, l)
             self.send(packet, port=p, flood=True)
 
-
     def send_one_table(self, dest):
         """
         Sends specific vector to all neighbors.
@@ -213,4 +211,3 @@ class DVRouter (basics.DVRouterBase):
             l, p, t = self.vector[dest]
             packet = basics.RoutePacket(dest, l)
             self.send(packet, port=p, flood=True)
-
