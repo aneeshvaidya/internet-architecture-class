@@ -138,9 +138,8 @@ class DVRouter (basics.DVRouterBase):
             l, p, t = self.vector[dest]
             self.vector[dest] = [l, p, t + DVRouter.DEFAULT_TIMER_INTERVAL]
             if self.vector[dest][2] >= 15:
-                self.vector[dest][0] = INFINITY
-                self.send_one_table(dest)
                 del self.vector[dest]
+                self.update_one_table(dest)
                     
 
     def update_all_tables(self):
@@ -156,7 +155,8 @@ class DVRouter (basics.DVRouterBase):
             for dest in neighbor.keys():
                 n_v = neighbor[dest] #neighbor_vector = n_v
                 if dest not in self.vector.keys() and n_v[0] < INFINITY:
-                    self.vector[dest] = [n_v[0] + self.ports[port], port, 0]  
+                    self.vector[dest] = [n_v[0] + self.ports[port], port, 0]
+                    updated.append(dest)
                 #If distance is infinity and we route through this port, it
                 #must be a dead route
                 elif n_v[0] == INFINITY and self.vector.get(dest)[1] == n_v[1]: 
@@ -177,13 +177,17 @@ class DVRouter (basics.DVRouterBase):
         """
         Updates vector table for one destination.
         """
+        updated = False
         for port in self.neighbors.keys():
             if destination in self.neighbors[port]:
                 n_v = self.neighbors[port][destination]
                 curr_v = self.vector[destination]
                 if curr_v[0] > n_v[0] + self.ports[n_v[1]] and n_v[0] < INFINITY:
+                    updated = True
                     l, p, t = n_v
                     self.vector[destination] = [l + self.ports[port], p, 0]
+        if updated:
+            self.send_one_update(destination)
 
     def send_all_tables(self):
         """
