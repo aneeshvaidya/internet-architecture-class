@@ -20,6 +20,8 @@ import sim
 import sim.api as api
 import sim.basics as basics
 
+import pdb 
+
 
 from test_simple import GetPacketHost
 
@@ -52,15 +54,16 @@ def launch ():
 
     yield 10
 
-    api.userlog.debug("Failing s1-s2 link")
+    api.userlog.debug("Failing s1-s2 link ")
+    #pdb.set_trace()
     s1.unlinkTo(s2)
 
-    yield 10
+    yield 20
 
     api.userlog.debug("Sending test ping 2")
     h1.ping(h2)
-
-    yield 10
+    #pdb.set_trace()
+    yield 20
 
     if h2.pings != 2:
       api.userlog.error("h2 got %s packets instead of 2", h2.pings)

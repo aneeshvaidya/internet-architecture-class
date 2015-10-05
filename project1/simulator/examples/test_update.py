@@ -38,29 +38,41 @@ def launch ():
 
   s1 = sim.config.default_switch_type.create("s1")
   s2 = sim.config.default_switch_type.create("s2")
-  s3 = sim.config.default_switch_type.create("s3")
+  #s3 = sim.config.default_switch_type.create("s3")
 
   h1.linkTo(s1)
   h2.linkTo(s2)
 
-  s2.linkTo(s3)
-  s1.linkTo(s3)
+  # s2.linkTo(s3)
+  # s1.linkTo(s3)
+
 
   def test_tasklet ():
-    yield 11 # Wait five seconds for routing to converge
+    s1.linkTo(s2)
+    yield 30 # Wait five seconds for routing to converge
     
     api.userlog.debug("Sending test ping 1")
     h1.ping(h2)
+    
+    # yield 3 # Wait five seconds for routing to converge
+    # s1.unlinkTo(s2)
+    # api.userlog.debug("Sending test ping 2")
+    # h1.ping(h2)
 
-    yield 5 # Wait a bit before sending last ping
-
-    api.userlog.debug("Sending test ping 1")
+    # yield 3 # Wait a bit before sending last ping
+    # print "s1 = ", s1.vector, "s2 = ", s2.vector
+    # s1.linkTo(s2)
+    
+    yield 3
+    api.userlog.debug("Sending test ping 3")
     h1.ping(h2)
 
     yield 5 # Wait five seconds for pings to be delivered
-
+    print "s1 = ", s1.vector, "s2 = ", s2.vector
+    api.userlog.debug("Pings received: " + str(h2.pings))
+    
     if h2.pings != 2:
-        api.userlog.debug("Pings received: " + str(h2.pings))
+
         api.userlog.debug("FAILED")
     else:
         api.userlog.debug("Tests passed")

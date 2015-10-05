@@ -33,6 +33,7 @@ class DVRouter (basics.DVRouterBase):
         self.ports = {}
 
     def handle_link_up (self, port, latency):
+    
         """
         Called by the framework when a link attached to this Entity goes up.
 
@@ -42,9 +43,7 @@ class DVRouter (basics.DVRouterBase):
         self.ports[port] = latency
         for dst in self.vector.keys():
             self.send_update(dst)
-        #we should send updates here too, all vectors in self.vector
-        
-        # only to new port?
+
 
     def handle_link_down (self, port):
         """
@@ -52,16 +51,22 @@ class DVRouter (basics.DVRouterBase):
 
         The port number used by the link is passed in.
         """
-        print "Port down: ", port
-        neighbor_vector = self.neighbors[port] 
-        for dest in neighbor_vector.keys():
-            l, p, t = neighbor_vector[dest]
-            neighbor_vector[dest] = (INFINITY, p, t)
-            if self.vector.get(dest):
-                l, p, t = self.vector[dest]
-                self.vector[dest] = (INFINITY, p, t)
-            self.update_vector_all()
-        del self.neighbors[port]
+        #print "Port down: ", port
+        #pdb.set_trace()
+        for dest in self.vector.keys():
+            l, p, t = self.vector[dest]
+            if p == port:
+                self.vector[dest] = (INFINITY, p, t)        
+        
+
+        if self.neighbors.get(port):        
+            del self.neighbors[port]
+            
+        del self.ports[port]
+
+                
+        self.update_vector_all()
+
 
     def handle_rx (self, packet, port):
         """
@@ -74,31 +79,38 @@ class DVRouter (basics.DVRouterBase):
         """
         #self.log("RX %s on %s (%s)", packet, port, api.current_time())
         #print api.get_name(self), "received packet from ", packet.src, " of type ", type(packet)
+        #pdb.set_trace()
+
         #Gives us packet.destination, packet.latency, packet.src
         if isinstance(packet, basics.RoutePacket):
-#            print "Latency: ", packet.latency
-#            print "Destination: ", packet.destination
             self._handle_route_packet(packet, port)
         elif isinstance(packet, basics.HostDiscoveryPacket):
             self._handle_discovery_packet(packet, port)
         else:
-            if self.vector.get(packet.dst):
-                if port != self.vector[packet.dst][1]:
-                    self.send(packet, port=self.vector[packet.dst][1], flood=False)
+            rout = self.vector.get(packet.dst)
+            if rout and port != rout[1] and rout[0] != INFINITY :#and rout[2] < 16:
+                #print api.get_name(self) + " sent packet to " + api.get_name(packet.dst)
+                self.send(packet, port=rout[1], flood=False)
                 
     def _handle_route_packet(self, packet, port):
+        #if api.get_name(self) == "s3": pdb.set_trace()
         if port not in self.neighbors.keys():
             self.neighbors[port] = {}
-        self.neighbors[port][packet.destination] = [packet.latency + self.ports[port], port, 0]
-        self.update_vector_one(port, packet.destination)
+        self.neighbors[port][packet.destination] = (packet.latency, port, 0)
+        if packet.destination in self.vector.keys():
+            self.recalculate_dest(packet.destination)
+        else:
+            self.set_dest(packet.destination, packet.latency + self.ports[port], port, 0)
+        #print api.get_name(self) + "'s vector is: " + str(self.vector)
 
     def _handle_discovery_packet(self, packet, port):
+    
         if packet.src in self.vector.keys():
             latency, port, ttl = self.vector.get(packet.src)
             if latency > self.ports[port]:
-                self.vector[packet.src] = [self.ports[port], port, -1]
+                self.set_dest(packet.src, self.ports[port], port, -1)
         else:
-            self.vector[packet.src] = [self.ports[port], port, -1]
+            self.set_dest(packet.src, self.ports[port], port, -1)
 
     def handle_timer (self):
         """
@@ -117,33 +129,16 @@ class DVRouter (basics.DVRouterBase):
         some port, so flood every port except that one. If poison mode is enabled, we send
         on that port a poisoned reversed route
         """
-        latency, port, ttl = self.vector[destination]
+        latency, p, ttl = self.vector[destination]
         packet = basics.RoutePacket(destination, latency)
-        self.send(packet, port=port, flood=True)
+        self.send(packet, port=p, flood=True)
         if self.POISON_MODE:
             poison = basics.RoutePacket(destination, INFINITY)
-            self.send(poison, port=port)
+            self.send(poison, port=port, flood=False)
 
-    def update_vector_one(self, port, destination):
-        """
-        Updates our instance vector to all reachable destinations.
-
-        Iterate through every neighbor vector. 
-        """
-        #print "Updating one vector for ", api.get_name(self)
-        neighbor_vector = self.neighbors[port][destination]
-        my_vector = self.vector.get(destination)
-        if my_vector:
-            if not neighbor_vector:
-                self.send_update(destination)
-            elif my_vector[0] + self.ports[port]> neighbor_vector[0] and neighbor_vector[0] < 16:
-                self.vector[destination] = neighbor_vector
-                self.send_update(destination)
-        else:
-            self.vector[destination] = neighbor_vector
+            
     def increment_ttl(self):            # increment ttl for neigbor vectors
         for n in self.neighbors.keys():
-        #    neighbor = self.neighbors.get(n)
             for dest in self.neighbors[n].keys():
                 l,p,t = self.neighbors[n][dest] 
                 if t >= 0:
@@ -157,7 +152,7 @@ class DVRouter (basics.DVRouterBase):
                 self.vector[dest] = (l,p,t + self.DEFAULT_TIMER_INTERVAL)
             if self.vector[dest][2] >= INFINITY:
                 del self.vector[dest]
-                print "Neighbors: ", self.neighbors
+                #print "Neighbors: ", self.neighbors
         
         print api.get_name(self), "'s vector: ", self.vector
                 
@@ -165,9 +160,47 @@ class DVRouter (basics.DVRouterBase):
         if not self.neighbors:
             for dest in self.vector.keys():
                 self.send_update(dest)
-        for port in self.neighbors.keys():
-            for dest in self.neighbors[port].keys():
-                self.update_vector_one(port, dest)
+                
+        for dest in self.vector.keys():
+            self.recalculate_dest(dest)
     
-
-         
+    def recalculate_dest(self, dest):
+        """
+        Updates vector to particular destinations.
+        Assumes destination in the vector
+        Iterate through every neighbor vector. 
+        """
+        #print "Updating one vector for ", api.get_name(self)
+        #if api.get_name(self) == "s3": pdb.set_trace()
+        is_updated = False
+        
+        l,p,t = self.vector.get(dest)
+        for n in self.neighbors.keys():
+            neighbor_vector = self.neighbors[n].get(dest)
+            lat = self.ports.get(p)
+            if neighbor_vector and lat:
+                nl,np,nt = neighbor_vector
+                if l > neighbor_vector[0] + lat:
+                    #print "Updated " + str(self.vector[dest]) + " to " + str(neighbor_vector)
+                    self.vector[dest] = (nl + lat, np, nt)
+                    is_updated = True
+        
+        # trying to lower ttl of vector destination if reciving update from neighbor
+        # second is forse propagation of broken link route
+        n = self.neighbors.get(p)
+        if not is_updated and n:
+            if n.get(dest):
+                if n[dest][2] < t:
+                    self.vector[dest] = (l, p, n[dest][2])
+                if n[dest][0] == INFINITY and t!= -1:
+                    self.vector[dest] = (INFINITY, p, t)
+        
+        #if is_updated or l == INFINITY:
+        self.send_update(dest)
+            
+    def set_dest(self, dest,l,p,t):
+        self.vector[dest] = (l, p, t)
+        self.send_update(dest)
+            
+            
+    
