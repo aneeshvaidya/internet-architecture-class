@@ -53,13 +53,10 @@ class LearningSwitch (api.Entity):
     # a packet with that host as the *destination*, we know where to send it!
     # But it's up to you to implement that.  For now, we just implement a
     # simple hub.
+    self.table[packet.src] = in_port
 
-    #if isinstance(packet, basics.HostDiscoveryPacket):
-      # Don't forward discovery messages
-     # return
-    if packet.src in self.table.keys():
-        self.send(packet, self.table[packet.src], flood=False)
+    if packet.dst in self.table.keys():
+        self.send(packet, self.table[packet.dst])
     else:
-        self.table[packet.src] = in_port
         # Flood out all ports except the input port
         self.send(packet, in_port, flood=True)
