@@ -124,6 +124,7 @@ class DVRouter(basics.DVRouterBase):
         Goes through neighbor and own vector tables and increments ttl. Removes
         invalid entries as well.
         """
+        pass
         for port in self.neighbors.keys():
             neighbor = self.neighbors[port]
             for dest in neighbor.keys():
