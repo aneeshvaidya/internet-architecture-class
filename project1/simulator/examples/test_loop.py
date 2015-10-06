@@ -60,13 +60,13 @@ def launch ():
     api.userlog.debug("Adding fast s1-s2 link ")
     #pdb.set_trace()
     #s1.unlinkTo(s2)
-    s1.linkTo(s2, latency=2)
+    s1.linkTo(s2)
     yield 10
 
     api.userlog.debug("Sending test ping 2")
     h1.ping(h2)
     #pdb.set_trace()
-    yield 10
+    yield 15
 
 
 
