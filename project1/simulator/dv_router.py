@@ -192,10 +192,11 @@ class DVRouter (basics.DVRouterBase):
                 if n[dest][2] < t:
                     self.vector[dest] = (l, p, n[dest][2])
                 if n[dest][0] == INFINITY and t!= -1:
+                    is_updated = True
                     self.vector[dest] = (INFINITY, p, t)
         
-        #if is_updated or l == INFINITY:
-        self.send_update(dest)
+        if is_updated:
+            self.send_update(dest)
             
     def set_dest(self, dest,l,p,t):
         self.vector[dest] = (l, p, t)
