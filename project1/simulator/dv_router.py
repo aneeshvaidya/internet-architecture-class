@@ -143,14 +143,14 @@ class DVRouter (basics.DVRouterBase):
                 l,p,t = self.neighbors[n][dest] 
                 if t >= 0:
                     self.neighbors[n][dest] = (l,p,t + self.DEFAULT_TIMER_INTERVAL)
-                if self.neighbors[n][dest][2] >= INFINITY:
+                if self.neighbors[n][dest][2] >= 15:
                     del self.neighbors[n][dest]
                 
         for dest in self.vector.keys():
             l,p,t = self.vector[dest]
             if t >=0:
                 self.vector[dest] = (l,p,t + self.DEFAULT_TIMER_INTERVAL)
-            if self.vector[dest][2] >= INFINITY:
+            if self.vector[dest][2] >= 15:
                 del self.vector[dest]
                 #print "Neighbors: ", self.neighbors
         
@@ -179,9 +179,9 @@ class DVRouter (basics.DVRouterBase):
             neighbor_vector = self.neighbors[n].get(dest)
             if neighbor_vector:
                 nl,np,nt = neighbor_vector
-                if l > neighbor_vector[0] + n:
+                if l > neighbor_vector[0] + self.ports[n]:
                     #print "Updated " + str(self.vector[dest]) + " to " + str(neighbor_vector)
-                    self.vector[dest] = (nl + n, np, nt)
+                    self.vector[dest] = (nl + self.ports[n], np, nt)
                     is_updated = True
         
         # trying to lower ttl of vector destination if reciving update from neighbor
