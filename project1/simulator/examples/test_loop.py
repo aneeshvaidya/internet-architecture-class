@@ -3,13 +3,11 @@ Test routing with a link failure
 
 Creates a topology like:
 
-h1 -- s1 -------------- s2 -- h2
-        \\              /
-         s3 -- s4 -- s5
+h1 -- s1 ---- s2 -- h2
+        \   /
+         s3 
 
 Sends a ping from h1 to h2.
-Waits a while.
-Fails the s1-s2 link.
 Waits a while.
 Sends a ping from h1 to h2.
 
@@ -33,31 +31,30 @@ def launch ():
   s1 = sim.config.default_switch_type.create('s1')
   s2 = sim.config.default_switch_type.create('s2')
   s3 = sim.config.default_switch_type.create('s3')
-  s4 = sim.config.default_switch_type.create('s4')
-  s5 = sim.config.default_switch_type.create('s5')
+  # s4 = sim.config.default_switch_type.create('s4')
+  # s5 = sim.config.default_switch_type.create('s5')
 
   h1.linkTo(s1)
   h2.linkTo(s2)
 
-  s1.linkTo(s2, latency =7)
+  s1.linkTo(s2, latency =3)
 
-  s1.linkTo(s3, latency =2)
-  s3.linkTo(s4)
-  s4.linkTo(s5)
-  s5.linkTo(s2, latency =2)
+  s1.linkTo(s3)
+  s3.linkTo(s2)
+  # s4.linkTo(s5)
+  # s5.linkTo(s2)
 
   def test_tasklet ():
-    yield 10 # Wait five seconds for routing to converge
+    yield 5 # Wait five seconds for routing to converge
 
     api.userlog.debug("Sending test ping 1")
     h1.ping(h2)
 
-    yield 10
+    yield 5
 
-    api.userlog.debug("Failing and slowing s1-s2 link ")
-    #pdb.set_trace()
+    api.userlog.debug("Failing s1-s2 link ")
+    pdb.set_trace()
     #s1.unlinkTo(s2)
-    s1.linkTo(s2 )
 
     yield 10
 

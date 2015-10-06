@@ -1,1 +1,9 @@
 .*.swp
+*.pyc
+
+/project1/simulator/ok-tools
+/project1/simulator/.ok_refresh
+/project1/netvis
+/project1/doc
+
+
