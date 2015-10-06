@@ -124,7 +124,6 @@ class DVRouter(basics.DVRouterBase):
         Goes through neighbor and own vector tables and increments ttl. Removes
         invalid entries as well.
         """
-        pass
         for port in self.neighbors.keys():
             neighbor = self.neighbors[port]
             for dest in neighbor.keys():
@@ -134,7 +133,8 @@ class DVRouter(basics.DVRouterBase):
                     del self.neighbors[port][dest]
         for dest in self.vector.keys():
             l, p, t = self.vector[dest]
-            self.vector[dest] = [l, p, t + DVRouter.DEFAULT_TIMER_INTERVAL]
+            if t >= 0:
+                self.vector[dest] = [l, p, t + DVRouter.DEFAULT_TIMER_INTERVAL]
             if self.vector[dest][2] >= 15:
                 del self.vector[dest]
                 self.update_one_table(dest)
