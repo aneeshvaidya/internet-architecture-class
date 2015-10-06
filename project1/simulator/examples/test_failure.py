@@ -39,25 +39,25 @@ def launch ():
   h1.linkTo(s1)
   h2.linkTo(s2)
 
-  s1.linkTo(s2, latency =7)
+  s1.linkTo(s2)
 
-  s1.linkTo(s3, latency =2)
+  s1.linkTo(s3)
   s3.linkTo(s4)
   s4.linkTo(s5)
-  s5.linkTo(s2, latency =2)
+  s5.linkTo(s2)
 
   def test_tasklet ():
-    yield 10 # Wait five seconds for routing to converge
+    yield 5 # Wait five seconds for routing to converge
 
     api.userlog.debug("Sending test ping 1")
     h1.ping(h2)
 
-    yield 10
+    yield 5
 
     api.userlog.debug("Failing and slowing s1-s2 link ")
     #pdb.set_trace()
-    #s1.unlinkTo(s2)
-    s1.linkTo(s2 )
+    s1.unlinkTo(s2)
+    #s1.linkTo(s2 )
 
     yield 10
 

@@ -10,6 +10,7 @@ reach unexpected destinations.
 import sim
 import sim.api as api
 import sim.basics as basics
+#import test_loop 
 
 
 class GetPacketHost (basics.BasicHost):
@@ -17,9 +18,15 @@ class GetPacketHost (basics.BasicHost):
   A host that expects to see a ping
   """
   pings = 0
+  # test_packets = 0
+  # basic_pings = 0
   def handle_rx (self, packet, port):
     if isinstance(packet, basics.Ping):
+      # self.basic_pings += 1
       self.pings += 1
+    # elif isinstance(packet, test_loop.TestPacket):
+      # self.test_packets += 1
+      # self.pings += 1
 
 
 class NoPacketHost (basics.BasicHost):
