@@ -65,6 +65,8 @@ def launch ():
     #pdb.set_trace()
     yield 10
 
+    s1.linkTo(s2, latency=2)
+
     if h2.pings != 2:
       api.userlog.error("h2 got %s packets instead of 2", h2.pings)
     else:
