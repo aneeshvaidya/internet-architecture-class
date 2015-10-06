@@ -29,6 +29,8 @@ from test_simple import GetPacketHost
 def launch ():
   h1 = GetPacketHost.create("h1")
   h2 = GetPacketHost.create("h2")
+  h3 = GetPacketHost.create("h3")
+  h4 = GetPacketHost.create("h4")
 
   s1 = sim.config.default_switch_type.create('s1')
   s2 = sim.config.default_switch_type.create('s2')
@@ -38,6 +40,8 @@ def launch ():
 
   h1.linkTo(s1)
   h2.linkTo(s4)
+  h3.linkTo(s3)
+  h4.linkTo(s5)
 
   s1.linkTo(s2, latency =2)
 
@@ -55,14 +59,16 @@ def launch ():
     api.userlog.debug("Sending test ping 1")
     h1.ping(h2)
 
-    yield 5
 
+
+    yield 5
+    h3.ping(h4)
     api.userlog.debug("Adding fast s1-s2 link ")
     #pdb.set_trace()
     #s1.unlinkTo(s2)
     s1.linkTo(s2)
     yield 10
-
+    h1.ping(h3)
     api.userlog.debug("Sending test ping 2")
     h1.ping(h2)
     #pdb.set_trace()

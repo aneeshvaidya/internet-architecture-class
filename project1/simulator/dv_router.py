@@ -5,7 +5,7 @@ Your awesome Distance Vector router for CS 168
 import sim.api as api
 import sim.basics as basics
 
-import pdb
+#import pdb
 
 
 # We define infinity as a distance of 16.
@@ -91,6 +91,7 @@ class DVRouter (basics.DVRouterBase):
             if rout and port != rout[1] and rout[0] != INFINITY :#and rout[2] < 16:
                 #print api.get_name(self) + " sent packet to " + api.get_name(packet.dst)
                 self.send(packet, port=rout[1], flood=False)
+
                 
     def _handle_route_packet(self, packet, port):
         #if api.get_name(self) == "s3": pdb.set_trace()
@@ -154,7 +155,7 @@ class DVRouter (basics.DVRouterBase):
                 del self.vector[dest]
                 #print "Neighbors: ", self.neighbors
         
-        print api.get_name(self), "'s vector: ", self.vector
+        #print api.get_name(self), "'s vector: ", self.vector
                 
     def update_vector_all(self): 
         if not self.neighbors:
@@ -163,6 +164,7 @@ class DVRouter (basics.DVRouterBase):
                 
         for dest in self.vector.keys():
             self.recalculate_dest(dest)
+            self.send_update(dest)
     
     def recalculate_dest(self, dest):
         """
@@ -170,7 +172,7 @@ class DVRouter (basics.DVRouterBase):
         Assumes destination in the vector
         Iterate through every neighbor vector. 
         """
-        #print "Updating one vector for ", api.get_name(self)
+
         #if api.get_name(self) == "s1" and not self.ports.get(1): pdb.set_trace()
         is_updated = False
         
