@@ -25,6 +25,9 @@ import pdb
 
 from test_simple import GetPacketHost
 
+class TestPacket(basics.Ping):
+    pass    
+
 
 def launch ():
   h1 = GetPacketHost.create("h1")
@@ -39,7 +42,7 @@ def launch ():
   h1.linkTo(s1)
   h2.linkTo(s4)
 
-  s1.linkTo(s2, latency =2)
+  s1.linkTo(s2, latency =4)
 
   s1.linkTo(s3)
   s1.linkTo(s5)
@@ -60,17 +63,22 @@ def launch ():
     api.userlog.debug("Adding fast s1-s2 link ")
     #pdb.set_trace()
     #s1.unlinkTo(s2)
-    s1.linkTo(s2, latency=2)
+    #s1.linkTo(s2, latency=2)
     yield 10
 
+
     api.userlog.debug("Sending test ping 2")
-    h1.ping(h2)
+    #t = TestPacket(dst=h2)
+    #h1.send(t, flood=True)
     #pdb.set_trace()
+    h1.ping(h2)
     yield 10
 
 
 
     if h2.pings != 2:
+      api.userlog.error("h2 got " + str(h2.basic_pings) + " basic pings")
+      api.userlog.error("h2 got " + str(h2.test_packets) + " test packets")
       api.userlog.error("h2 got %s packets instead of 2", h2.pings)
     else:
       api.userlog.debug("Test passed successfully!")
