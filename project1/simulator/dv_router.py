@@ -84,7 +84,7 @@ class DVRouter(basics.DVRouterBase):
             self._handle_discovery_packet(packet, port)
         else:
             rout = self.vector.get(packet.dst)
-            if rout and port != rout[1] and rout[0] != INFINITY:  # and rout[2] < 16:
+            if rout and port != rout[1] and rout[0] != INFINITY:
                 self.send(packet, port=rout[1], flood=False)
 
 
@@ -145,6 +145,7 @@ class DVRouter(basics.DVRouterBase):
         for dest in self.vector.keys():
             l, p, t = self.vector[dest]
             if t < time:
+                print self + ' said that rout to '+ dest + self.vector[dest] +'is expired'
                 if self.POISON_MODE:
                     self.vector[dest] = (INFINITY, p, t)
                 else:
@@ -191,9 +192,13 @@ class DVRouter(basics.DVRouterBase):
                 if n[dest][2] > t:
                     self.vector[dest] = (l, p, n[dest][2])
 
-                if n[dest][0] == INFINITY or n[dest][0] > l:
+                # if n[dest][0] == INFINITY:
+                    # is_updated = True
+                    # self.vector[dest] = (INFINITY, p, t)
+                    
+                if n[dest][0] + self.ports[p] > l:       # trusts neighbors
                     is_updated = True
-                    self.vector[dest] = (INFINITY, p, t)
+                    self.vector[dest] = (min(INFINITY,n[dest][0] + self.ports[p]), p, n[dest][2])
         
         if is_updated:
             self.send_update(dest)
