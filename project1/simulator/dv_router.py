@@ -48,7 +48,6 @@ class DVRouter(basics.DVRouterBase):
         Called by the framework when a link attached to this Entity does down.
         The port number used by the link is passed in.
         """
-        # print "Port down: ", port
         # pdb.set_trace()
         for dest in self.vector.keys():
             l, p, t = self.vector[dest]
@@ -60,7 +59,9 @@ class DVRouter(basics.DVRouterBase):
 
         if self.neighbors.get(port):
             del self.neighbors[port]
-
+            
+        del self.ports[port] 
+        
         self.update_vector_all()
 
     def handle_rx(self, packet, port):
@@ -103,9 +104,9 @@ class DVRouter(basics.DVRouterBase):
         if packet.src in self.vector.keys():
             latency, port, exp_t = self.vector.get(packet.src)
             if latency > self.ports[port]:
-                self.set_dest(packet.src, self.ports[port], port, -1)
+                self.set_dest(packet.src, self.ports[port], port, float("inf"))
         else:
-            self.set_dest(packet.src, self.ports[port], port, -1)
+            self.set_dest(packet.src, self.ports[port], port, float("inf"))
 
     def handle_timer(self):
         """
@@ -135,7 +136,7 @@ class DVRouter(basics.DVRouterBase):
         for n in self.neighbors.keys():
             for dest in self.neighbors[n].keys():
                 l, p, t = self.neighbors[n][dest]
-                if t < time and t!=-1:
+                if t < time:
                     if self.POISON_MODE:
                         self.neighbors[n][dest] = (INFINITY, p, t)
                     else:
@@ -143,7 +144,7 @@ class DVRouter(basics.DVRouterBase):
 
         for dest in self.vector.keys():
             l, p, t = self.vector[dest]
-            if t < time and t!=-1:
+            if t < time:
                 if self.POISON_MODE:
                     self.vector[dest] = (INFINITY, p, t)
                 else:
@@ -190,7 +191,7 @@ class DVRouter(basics.DVRouterBase):
                 if n[dest][2] > t:
                     self.vector[dest] = (l, p, n[dest][2])
 
-                if n[dest][0] == INFINITY and t!= -1:
+                if n[dest][0] == INFINITY or n[dest][0] > l:
                     is_updated = True
                     self.vector[dest] = (INFINITY, p, t)
         
