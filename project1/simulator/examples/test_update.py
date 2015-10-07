@@ -49,19 +49,19 @@ def launch ():
 
   def test_tasklet ():
     s1.linkTo(s2)
-    yield 30 # Wait five seconds for routing to converge
+    yield 5 # Wait five seconds for routing to converge
     
     api.userlog.debug("Sending test ping 1")
     h1.ping(h2)
     
-    # yield 3 # Wait five seconds for routing to converge
-    # s1.unlinkTo(s2)
-    # api.userlog.debug("Sending test ping 2")
-    # h1.ping(h2)
+    yield 5 # Wait five seconds to receive ping
+    s1.unlinkTo(s2)
+    api.userlog.debug("Sending test ping 2")
+    h1.ping(h2)
 
-    # yield 3 # Wait a bit before sending last ping
-    # print "s1 = ", s1.vector, "s2 = ", s2.vector
-    # s1.linkTo(s2)
+    yield 5 # Wait a bit before sending last ping
+    print "s1 = ", s1.vector, "s2 = ", s2.vector
+    s1.linkTo(s2)
     
     yield 3
     api.userlog.debug("Sending test ping 3")
