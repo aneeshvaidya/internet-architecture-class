@@ -41,7 +41,8 @@ class DVRouter(basics.DVRouterBase):
         # print "Link up on port ", port, "with latency ", latency, "with node ", api.get_name(self)
         self.ports[port] = latency
         for dst in self.vector.keys():
-            self.send_update(dst)
+            packet = basics.RoutePacket(dst, self.vector[dst][0])
+            self.send(packet, port=port)
 
     def handle_link_down(self, port):
         """
@@ -61,9 +62,9 @@ class DVRouter(basics.DVRouterBase):
             del self.neighbors[port]
             
         del self.ports[port] 
-        
-        self.update_vector_all()
+            
 
+        #self.update_vector_all()
     def handle_rx(self, packet, port):
         """
         Called by the framework when this Entity receives a packet.
@@ -94,7 +95,7 @@ class DVRouter(basics.DVRouterBase):
             self.neighbors[port] = {}
         self.neighbors[port][packet.destination] = (packet.latency, port, api.current_time() + 15)
         if packet.destination in self.vector.keys():
-            self.recalculate_dest(packet.destination)
+            self.recalculate_dest(packet.destination, send_update=True)
         else:
             self.set_dest(packet.destination, min(packet.latency + self.ports[port],INFINITY), port, api.current_time() + 15)
             # print api.get_name(self) + "'s vector is: " + str(self.vector)
@@ -145,12 +146,12 @@ class DVRouter(basics.DVRouterBase):
         for dest in self.vector.keys():
             l, p, t = self.vector[dest]
             if t < time:
-                print self + ' said that rout to '+ dest + self.vector[dest] +'is expired'
+            #    print api.get_name(self) + ' said that rout to '+ api.get_name(dest) + str(self.vector[dest]) +'is expired'
                 if self.POISON_MODE:
                     self.vector[dest] = (INFINITY, p, t)
                 else:
                     del self.vector[dest]
-        #print api.get_name(self) + "'s vector is: " + str(self.vector)
+            #print api.get_name(self) + "'s vector is: " + str(self.vector)
                 
     def update_vector_all(self): 
 
@@ -163,7 +164,7 @@ class DVRouter(basics.DVRouterBase):
             self.send_update(dest)
     
 
-    def recalculate_dest(self, dest):
+    def recalculate_dest(self, dest, send_update=False):
         """
         Updates vector to particular destinations.
         Assumes destination in the vector
@@ -192,15 +193,15 @@ class DVRouter(basics.DVRouterBase):
                 if n[dest][2] > t:
                     self.vector[dest] = (l, p, n[dest][2])
 
-                # if n[dest][0] == INFINITY:
-                    # is_updated = True
-                    # self.vector[dest] = (INFINITY, p, t)
+                if n[dest][0] == INFINITY:
+                    is_updated = True
+                    self.vector[dest] = (INFINITY, p, t)
                     
                 if n[dest][0] + self.ports[p] > l:       # trusts neighbors
                     is_updated = True
                     self.vector[dest] = (min(INFINITY,n[dest][0] + self.ports[p]), p, n[dest][2])
         
-        if is_updated:
+        if is_updated and send_update:
             self.send_update(dest)
             
     def set_dest(self, dest,l,p,t):

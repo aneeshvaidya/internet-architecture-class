@@ -63,7 +63,7 @@ def launch ():
     print "s1 = ", s1.vector, "s2 = ", s2.vector
     s1.linkTo(s2)
     
-    yield 3
+    yield 5 
     api.userlog.debug("Sending test ping 3")
     h1.ping(h2)
 
