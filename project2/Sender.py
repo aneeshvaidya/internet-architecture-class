@@ -1,6 +1,7 @@
 import sys
 import random
 import getopt
+import time
 
 import Checksum
 import BasicSender
@@ -19,7 +20,9 @@ class Sender(BasicSender.BasicSender):
 
     # Main sending loop.
     def start(self):
-      # add things here
+
+        
+        data = self.filename.read(1472)
       pass
 
     def _send_syn(self):
@@ -35,8 +38,42 @@ class Sender(BasicSender.BasicSender):
         packet = self.make_packet('ack', self.seqno + 1)
         self.send(packet)
 
-    def _send_data(self):
-        pass 
+    def _send_data(self, data):
+        packet = self.make_packet('dat', self.seqno, data)
+        self.send(packet)
+        
+    def set_connection(self):
+        seqnumber = random.randint(0, sys.maxint)
+        packet = self.make_packet('syn', seqnumber)
+        now = time.time()
+        self.send(packet)
+        try:
+            message, address = self.receive()
+            msg_type, seqno, data, checksum = self._split_message(message)
+            try:
+                seqno = int(seqno)
+            except:
+                raise ValueError
+            if debug:
+                print "Sender.py: received %s|%d|%s|%s" % (msg_type, seqno, data[:5], checksum)
+            if Checksum.validate_checksum(message) and msg_type == 'ack' and secno = secnumber+1:
+                self.secno = secnumber+1
+                return True
+                
+            elif self.debug:
+                print "Receiver.py: checksum failed: %s|%d|%s|%s" % (msg_type, seqno, data[:5], checksum)
+
+            if time.time() - now > self.TIMEOUT:
+                return False
+                
+        except socket.timeout:
+            self._cleanup()
+        except (KeyboardInterrupt, SystemExit):
+            exit()
+        except ValueError, e:
+            if self.debug:
+                print "Receiver.py:" + str(e)
+            pass # ignore
 
         
 '''
