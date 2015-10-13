@@ -20,10 +20,15 @@ class Sender(BasicSender.BasicSender):
 
     # Main sending loop.
     def start(self):
-
-        
+        while not self.set_connection():
+            pass
         data = self.filename.read(1472)
-      pass
+        while data:
+            self.send_data(data)
+            data = self.filename.read(1472)
+        while not self.close_connection():
+            pass
+      
 
     def _send_syn(self):
         self.seqno = random.randint(0, sys.maxint)
