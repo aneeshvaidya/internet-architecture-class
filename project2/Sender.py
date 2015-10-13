@@ -1,4 +1,5 @@
 import sys
+import random
 import getopt
 
 import Checksum
@@ -8,6 +9,9 @@ import BasicSender
 This is a skeleton sender class. Create a fantastic transport protocol here.
 '''
 class Sender(BasicSender.BasicSender):
+    WINDOW = 7
+    TIMEOUT = 500
+
     def __init__(self, dest, port, filename, debug=False, sackMode=False):
         super(Sender, self).__init__(dest, port, filename, debug)
         self.sackMode = sackMode
@@ -17,6 +21,23 @@ class Sender(BasicSender.BasicSender):
     def start(self):
       # add things here
       pass
+
+    def _send_syn(self):
+        self.seqno = random.randint(0, sys.maxint)
+        packet = self.make_packet('syn', self.seqno)
+        self.send(packet)
+
+    def _send_fin(self):
+        packet = self.make_packet('fin', self.seqno + 1)
+        self.send(packet)
+
+    def _send_ack(self):
+        packet = self.make_packet('ack', self.seqno + 1)
+        self.send(packet)
+
+    def _send_data(self):
+        pass 
+
         
 '''
 This will be run if you run this script from the command line. You should not
