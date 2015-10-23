@@ -1,4 +1,5 @@
 import sys
+import socket
 import random
 import getopt
 import time
@@ -11,74 +12,66 @@ This is a skeleton sender class. Create a fantastic transport protocol here.
 '''
 class Sender(BasicSender.BasicSender):
     WINDOW = 7
-    TIMEOUT = 500
+    TIMEOUT = 0.5 
 
     def __init__(self, dest, port, filename, debug=False, sackMode=False):
         super(Sender, self).__init__(dest, port, filename, debug)
         self.sackMode = sackMode
         self.debug = debug
+        self.buff = []
 
     # Main sending loop.
     def start(self):
-        while not self.set_connection():
-            pass
-        data = self.filename.read(1472)
-        while data:
-            self.send_data(data)
-            data = self.filename.read(1472)
-        while not self.close_connection():
-            pass
-      
+        """
+        Sending loop for the Sender.
+        Read from the file and place it into the buffer. 
+        """
+        self.initialize_buffer()
+        while True:
+                        
+            return
+    
+    def initialize_buffer(self):
+        """
+        Initializes the buffer with data from self.infile
+        """
+        r = self.infile.read(1363)
+        while r:
+            self.buff.append(r)
+            r = self.infile.read(1363)
+        return
+            
+           
+    def send_syn(self):
+        """
+        Handles sending a syn packet, as well as the ACK to follow.
+        We set a new sequence number, and create our syn packet. Then we 
+        send, and timeout if there's no data response and retry till we
+        get an ack.
+        """
+        self.seqno(0, sys.maxint)
+        packet = self.make_packet('syn', self.seqno, '')
+        data = None
+        while not data:
+            self.send(packet)
+            data = self.receive(timeout=self.TIMEOUT)
+        return data 
 
-    def _send_syn(self):
-        self.seqno = random.randint(0, sys.maxint)
-        packet = self.make_packet('syn', self.seqno)
-        self.send(packet)
+    def send_fin(self):
+        """
+        Handles sending of a fin packet, containing the last data
+        in the buffer, as well as waiting for ack of the closed
+        connection.
+        """
+        self.seqno += 1
+        packet = self.make_packet('fin', self.seqno, self.buff[-1])
+        response = None
+        while not response:
+            self.send(packet)
+            response = self.receive(timeout=self.TIMEOUT)
+        return
 
-    def _send_fin(self):
-        packet = self.make_packet('fin', self.seqno + 1)
-        self.send(packet)
 
-    def _send_ack(self):
-        packet = self.make_packet('ack', self.seqno + 1)
-        self.send(packet)
-
-    def _send_data(self, data):
-        packet = self.make_packet('dat', self.seqno, data)
-        self.send(packet)
-        
-    def set_connection(self):
-        seqnumber = random.randint(0, sys.maxint)
-        packet = self.make_packet('syn', seqnumber)
-        now = time.time()
-        self.send(packet)
-        try:
-            message, address = self.receive()
-            msg_type, seqno, data, checksum = self._split_message(message)
-            try:
-                seqno = int(seqno)
-            except:
-                raise ValueError
-            if debug:
-                print "Sender.py: received %s|%d|%s|%s" % (msg_type, seqno, data[:5], checksum)
-            if Checksum.validate_checksum(message) and msg_type == 'ack' and secno = secnumber+1:
-                self.secno = secnumber+1
-                return True
-                
-            elif self.debug:
-                print "Receiver.py: checksum failed: %s|%d|%s|%s" % (msg_type, seqno, data[:5], checksum)
-
-            if time.time() - now > self.TIMEOUT:
-                return False
-                
-        except socket.timeout:
-            self._cleanup()
-        except (KeyboardInterrupt, SystemExit):
-            exit()
-        except ValueError, e:
-            if self.debug:
-                print "Receiver.py:" + str(e)
-            pass # ignore
 
         
 '''
