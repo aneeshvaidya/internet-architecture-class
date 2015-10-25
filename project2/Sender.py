@@ -19,6 +19,7 @@ class Sender(BasicSender.BasicSender):
         self.sackMode = sackMode
         self.debug = debug
         self.buff = []
+        self.d_index = 0
 
     # Main sending loop.
     def start(self):
@@ -27,9 +28,15 @@ class Sender(BasicSender.BasicSender):
         Read from the file and place it into the buffer. 
         """
         self.initialize_buffer()
-        while True:
-                        
-            return
+        self.send_syn()
+        while self.d_index < len(self.buff):
+            self.send_data()
+            if self.d_index == len(self.buff) - 1:
+                print 'Sending fin'
+                self.send_fin()
+                return
+            self.d_index += 1
+        return
     
     def initialize_buffer(self):
         """
@@ -40,6 +47,16 @@ class Sender(BasicSender.BasicSender):
             self.buff.append(r)
             r = self.infile.read(1363)
         return
+
+    def send_data(self):
+        self.seqno += 1
+        packet = self.make_packet('dat', self.seqno, self.buff[self.d_index])
+        response = None
+        while not response:
+            self.send(packet)
+            response = self.receive(timeout=self.TIMEOUT)
+        return response
+
             
            
     def send_syn(self):
@@ -49,7 +66,7 @@ class Sender(BasicSender.BasicSender):
         send, and timeout if there's no data response and retry till we
         get an ack.
         """
-        self.seqno(0, sys.maxint)
+        self.seqno = random.randint(0, sys.maxint)
         packet = self.make_packet('syn', self.seqno, '')
         data = None
         while not data:
