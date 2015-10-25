@@ -13,13 +13,13 @@ This is a skeleton sender class. Create a fantastic transport protocol here.
 class Sender(BasicSender.BasicSender):
     WINDOW = 7
     TIMEOUT = 0.5 
+    SEGMENT_SIZE = 1400
 
     def __init__(self, dest, port, filename, debug=False, sackMode=False):
         super(Sender, self).__init__(dest, port, filename, debug)
         self.sackMode = sackMode
         self.debug = debug
-        self.buff = []
-        self.d_index = 0
+        self.base = 0
 
     # Main sending loop.
     def start(self):
@@ -27,69 +27,60 @@ class Sender(BasicSender.BasicSender):
         Sending loop for the Sender.
         Read from the file and place it into the buffer. 
         """
-        self.initialize_buffer()
         self.send_syn()
-        while self.d_index < len(self.buff):
-            self.send_data()
-            if self.d_index == len(self.buff) - 1:
-                print 'Sending fin'
-                self.send_fin()
+        data = self.get_file_segment()
+        while data:
+            if len(data) != Sender.SEGMENT_SIZE:
+                self.send_fin(data)
                 return
-            self.d_index += 1
-        return
+            self.send_dat(data)
+            data = self.get_file_segment()
+            self.base += 1
     
-    def initialize_buffer(self):
-        """
-        Initializes the buffer with data from self.infile
-        """
-        r = self.infile.read(1458)
-        while r:
-            self.buff.append(r)
-            r = self.infile.read(1458)
-        return
 
-    def send_data(self):
+    def send_dat(self, data):
+        """
+        Handles sending of dat packets. Windowing and timeouts are delegated here 
+        as well.
+        """
         self.seqno += 1
-        packet = self.make_packet('dat', self.seqno, self.buff[self.d_index])
+        packet = self.make_packet('dat', self.seqno, data) 
+        return self._send_packet(packet)
+            
+           
+    def send_syn(self):
+        """
+        Creates a new syn packet and then sends it to the sender function.
+        """
+        self.seqno = random.randint(0, sys.maxint)
+        packet = self.make_packet('syn', self.seqno, '')
+        return self._send_packet(packet)
+
+    def send_fin(self, data):
+        """
+        Creates a fin packet from the last data in the buffer and sends it to 
+        the sender function.
+        """
+        self.seqno += 1
+        packet = self.make_packet('fin', self.seqno, data) 
+        return self._send_packet(packet)
+
+
+    def get_file_segment(self):
+        """
+        Reads next file segment from self.infile
+        """
+        return self.infile.read(Sender.SEGMENT_SIZE) 
+
+    def _send_packet(self, packet):
+        """
+        Handles sending of syn and fin packets. 
+        """
         response = None
         while not response:
             self.send(packet)
             response = self.receive(timeout=self.TIMEOUT)
         return response
-
-            
-           
-    def send_syn(self):
-        """
-        Handles sending a syn packet, as well as the ACK to follow.
-        We set a new sequence number, and create our syn packet. Then we 
-        send, and timeout if there's no data response and retry till we
-        get an ack.
-        """
-        self.seqno = random.randint(0, sys.maxint)
-        packet = self.make_packet('syn', self.seqno, '')
-        data = None
-        while not data:
-            self.send(packet)
-            data = self.receive(timeout=self.TIMEOUT)
-        return data 
-
-    def send_fin(self):
-        """
-        Handles sending of a fin packet, containing the last data
-        in the buffer, as well as waiting for ack of the closed
-        connection.
-        """
-        self.seqno += 1
-        packet = self.make_packet('fin', self.seqno, self.buff[-1])
-        response = None
-        while not response:
-            self.send(packet)
-            response = self.receive(timeout=self.TIMEOUT)
-        return
-
-
-
         
 '''
 This will be run if you run this script from the command line. You should not
