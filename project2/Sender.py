@@ -42,10 +42,10 @@ class Sender(BasicSender.BasicSender):
         """
         Initializes the buffer with data from self.infile
         """
-        r = self.infile.read(1363)
+        r = self.infile.read(1458)
         while r:
             self.buff.append(r)
-            r = self.infile.read(1363)
+            r = self.infile.read(1458)
         return
 
     def send_data(self):
