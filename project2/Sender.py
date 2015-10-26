@@ -19,7 +19,6 @@ class Sender(BasicSender.BasicSender):
         super(Sender, self).__init__(dest, port, filename, debug)
         self.sackMode = sackMode
         self.debug = debug
-        self.base = 0
         self.window = {}
         self.seqno = 0 
         self.seqbase = self.seqno + 1
@@ -56,6 +55,9 @@ class Sender(BasicSender.BasicSender):
            
 
     def prepare_window(self):
+        """
+        Prepares window from seqbase to seqmax for sending
+        """
         for i in range(self.seqbase, self.seqmax):
             if self.window.get(i):
                 continue
@@ -72,18 +74,13 @@ class Sender(BasicSender.BasicSender):
         return 
     
     def send_window(self):
+        """
+        Sends packets in seqno window, if there is a packet
+        for that sequence number
+        """
         for i in range(self.seqbase, self.seqmax):
             if self.window.get(i):
                 self.send(self.window[i])
-
-    def send_dat(self, data):
-        """
-        Handles sending of dat packets. Windowing and timeouts are delegated here 
-        as well.
-        """
-        self.seqno += 1
-        packet = self.make_packet('dat', self.seqno, data) 
-        return self._send_packet(packet)
             
            
     def send_syn(self):
@@ -91,34 +88,12 @@ class Sender(BasicSender.BasicSender):
         Creates a new syn packet and then sends it to the sender function.
         """
         packet = self.make_packet('syn', self.seqno, '')
-        return self._send_packet(packet)
-
-    def send_fin(self, data):
-        """
-        Creates a fin packet from the last data in the buffer and sends it to 
-        the sender function.
-        """
-        self.seqno += 1
-        packet = self.make_packet('fin', self.seqno, data) 
-        return self._send_packet(packet)
-
-
-    def get_file_segment(self):
-        """
-        Reads next file segment from self.infile
-        """
-        return self.infile.read(Sender.SEGMENT_SIZE) 
-
-    def _send_packet(self, packet):
-        """
-        Handles sending of syn and fin packets. 
-        """
         response = None
         while not response:
             self.send(packet)
-            response = self.receive(timeout=self.TIMEOUT)
+            response = self.receive(Sender.TIMEOUT)
         return response
-        
+
 '''
 This will be run if you run this script from the command line. You should not
 change any of this; the grader may rely on the behavior here to test your
