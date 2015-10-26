@@ -3,6 +3,7 @@ import socket
 import random
 import getopt
 import time
+import pdb
 
 import Checksum
 import BasicSender
@@ -20,10 +21,18 @@ class Sender(BasicSender.BasicSender):
         self.sackMode = sackMode
         self.debug = debug
         self.window = {}
-        self.seqno = 0 
-        self.seqbase = self.seqno + 1
-        self.seqmax = self.seqno + Sender.WINDOW + 1
-        self.seqfinack = -1
+        self.seqno = 0      #initial sequence
+        self.seqbase = self.seqno + 1           #window low end      
+        self.seqmax = self.seqno + Sender.WINDOW    #window high end
+        self.seqfinack = -1     # test
+        self.last_ack = 0
+        self.dup_acks = 0
+        self.updates = []
+        if sackMode:
+            self.last_sacks = [-1]        
+            self.ack_type = 'sack'
+        else:
+            self.ack_type = 'ack'
 
     # Main sending loop.
     def start(self):
@@ -34,24 +43,56 @@ class Sender(BasicSender.BasicSender):
         self.send_syn()
         self.prepare_window()
         self.send_window()
+        self.updates = []
+        
         while True:
             if len(self.window) == 0:
                 return
             response = self.receive(Sender.TIMEOUT)
             if response and Checksum.validate_checksum(response):
                 msg_type, seqno, data, checksum = self.split_packet(response)
-                if msg_type == 'ack' and seqno > self.seqbase:
-                    seqno = int(seqno)
+                
+                if sackMode:
+                    seqno, sacks_str = seqno.split(';')
+                    #print str(sacks_str.split(','))
+                    
+                    if sacks_str:
+                        sacks = [int(i) for i in sacks_str.split(',')]
+                        if sacks[-1] > self.last_sacks[-1]:       # sackMode logic
+                            self.last_sacks = sacks                         #
+
+                seqno = int(seqno)                        
+                if msg_type == self.ack_type and seqno > self.seqbase:
+
+                    # fast retransmit logic
+                    if seqno == self.last_ack:
+                        self.dup_acks += 1
+                        if self.dup_acks >= 4:
+                            if sackMode:
+                                self.retransmit_sacks()
+                            else:
+                                self.send(self.window[self.last_ack])
+                            self.dup_acks = 0
+                            continue
+                            
+                    elif seqno > self.last_ack:
+                        self.last_ack = seqno
+                        
+                    # window logic    
                     for i in range(self.seqbase, seqno):
                         del self.window[i]
                     self.seqmax += seqno - self.seqbase
                     self.seqbase = seqno
                     self.prepare_window()
-                    self.send_window()
-                if msg_type == 'sack' and int(seqno[0]) == self.seqfinack:
-                    return
+                    self.send_updates()  # MK changes
+
+                # if msg_type == 'sack' and int(seqno) == self.seqfinack:
+                    # return
             else:
-                self.send_window()
+                if self.sackMode:
+                    self.retransmit_sacks()   
+                else:
+                    self.send_window()                
            
 
     def prepare_window(self):
@@ -71,6 +112,8 @@ class Sender(BasicSender.BasicSender):
                 else:
                     continue
                 self.window[i] = packet
+                self.updates.append(i)
+        #print "updates " + str(self.updates)
         return 
     
     def send_window(self):
@@ -81,7 +124,14 @@ class Sender(BasicSender.BasicSender):
         for i in range(self.seqbase, self.seqmax):
             if self.window.get(i):
                 self.send(self.window[i])
-            
+                
+    def send_updates(self):
+        """
+        Sends only new packets in seqno window, 
+        """
+        for s in self.updates:
+            self.send(self.window[s])
+        self.updates = []
            
     def send_syn(self):
         """
@@ -93,6 +143,14 @@ class Sender(BasicSender.BasicSender):
             self.send(packet)
             response = self.receive(Sender.TIMEOUT)
         return response
+        
+    def retransmit_sacks(self):
+        """
+        Sends only new packets in seqno window, 
+        """
+        for i in range(self.seqbase, self.seqmax):
+            if self.window.get(i) and i not in self.last_sacks:
+                self.send(self.window[i])
 
 '''
 This will be run if you run this script from the command line. You should not
