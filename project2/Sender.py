@@ -13,13 +13,18 @@ This is a skeleton sender class. Create a fantastic transport protocol here.
 class Sender(BasicSender.BasicSender):
     WINDOW = 7
     TIMEOUT = 0.5 
-    SEGMENT_SIZE = 1400
+    SEGMENT_SIZE = 1458 
 
     def __init__(self, dest, port, filename, debug=False, sackMode=False):
         super(Sender, self).__init__(dest, port, filename, debug)
         self.sackMode = sackMode
         self.debug = debug
         self.base = 0
+        self.window = {}
+        self.seqno = 0 
+        self.seqbase = self.seqno + 1
+        self.seqmax = self.seqno + Sender.WINDOW + 1
+        self.seqfinack = -1
 
     # Main sending loop.
     def start(self):
@@ -28,15 +33,47 @@ class Sender(BasicSender.BasicSender):
         Read from the file and place it into the buffer. 
         """
         self.send_syn()
-        data = self.get_file_segment()
-        while data:
-            if len(data) != Sender.SEGMENT_SIZE:
-                self.send_fin(data)
+        self.prepare_window()
+        self.send_window()
+        while True:
+            if len(self.window) == 0:
                 return
-            self.send_dat(data)
-            data = self.get_file_segment()
-            self.base += 1
+            response = self.receive(Sender.TIMEOUT)
+            if response and Checksum.validate_checksum(response):
+                print "Sender.py: received ", response
+                msg_type, seqno, data, checksum = self.split_packet(response)
+                seqno = int(seqno)
+                if msg_type == 'ack' and seqno > self.seqbase:
+                    for i in range(self.seqbase, seqno):
+                        del self.window[i]
+                    self.seqmax += seqno - self.seqbase
+                    self.seqbase = seqno
+                    self.prepare_window()
+                    self.send_window()
+            else:
+                self.send_window()
+           
+
+    def prepare_window(self):
+        for i in range(self.seqbase, self.seqmax):
+            if self.window.get(i):
+                continue
+            else:
+                data = self.infile.read(Sender.SEGMENT_SIZE)
+                if len(data) != Sender.SEGMENT_SIZE and data != '':
+                    packet = self.make_packet('fin', i, data)
+                    self.seqfinack = i + 1
+                elif data:
+                    packet = self.make_packet('dat', i , data)
+                else:
+                    continue
+                self.window[i] = packet
+        return 
     
+    def send_window(self):
+        for i in range(self.seqbase, self.seqmax):
+            if self.window.get(i):
+                self.send(self.window[i])
 
     def send_dat(self, data):
         """
@@ -52,7 +89,6 @@ class Sender(BasicSender.BasicSender):
         """
         Creates a new syn packet and then sends it to the sender function.
         """
-        self.seqno = random.randint(0, sys.maxint)
         packet = self.make_packet('syn', self.seqno, '')
         return self._send_packet(packet)
 
