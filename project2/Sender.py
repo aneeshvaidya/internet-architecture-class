@@ -40,16 +40,17 @@ class Sender(BasicSender.BasicSender):
                 return
             response = self.receive(Sender.TIMEOUT)
             if response and Checksum.validate_checksum(response):
-                print "Sender.py: received ", response
                 msg_type, seqno, data, checksum = self.split_packet(response)
-                seqno = int(seqno)
                 if msg_type == 'ack' and seqno > self.seqbase:
+                    seqno = int(seqno)
                     for i in range(self.seqbase, seqno):
                         del self.window[i]
                     self.seqmax += seqno - self.seqbase
                     self.seqbase = seqno
                     self.prepare_window()
                     self.send_window()
+                if msg_type == 'sack' and int(seqno[0]) == self.seqfinack:
+                    return
             else:
                 self.send_window()
            
