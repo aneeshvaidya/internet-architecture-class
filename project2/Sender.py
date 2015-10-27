@@ -49,9 +49,10 @@ class Sender(BasicSender.BasicSender):
             if len(self.window) == 0:
                 return
             response = self.receive(Sender.TIMEOUT)
+            print "Received response"
             if response and Checksum.validate_checksum(response):
                 msg_type, seqno, data, checksum = self.split_packet(response)
-                
+                print msg_type, "|", seqno, "|...|", checksum
                 if sackMode:
                     seqno, sacks_str = seqno.split(';')
                     #print str(sacks_str.split(','))
@@ -92,6 +93,7 @@ class Sender(BasicSender.BasicSender):
                 if self.sackMode:
                     self.retransmit_sacks()   
                 else:
+                    print "Sending window because response is None"
                     self.send_window()                
            
 
@@ -123,6 +125,8 @@ class Sender(BasicSender.BasicSender):
         """
         for i in range(self.seqbase, self.seqmax):
             if self.window.get(i):
+                d_print = self.split_packet(self.window[i])
+                print "Sender.py: send ", d_print[0], "|", d_print[1], "|...|", d_print[3]
                 self.send(self.window[i])
                 
     def send_updates(self):
