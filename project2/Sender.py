@@ -45,13 +45,15 @@ class Sender(BasicSender.BasicSender):
         self.send_window()
         self.updates = []
         
+        #f1=open('./testfile', 'w+')
+        
         while True:
             if len(self.window) == 0:
                 return
             response = self.receive(Sender.TIMEOUT)
             if response and Checksum.validate_checksum(response):
                 msg_type, seqno, data, checksum = self.split_packet(response)
-                
+                #print "response tecivedd type = ", msg_type, ' seqno = ', seqno
                 if sackMode:
                     seqno, sacks_str = seqno.split(';')
                     #print str(sacks_str.split(','))
@@ -61,22 +63,28 @@ class Sender(BasicSender.BasicSender):
                         if sacks[-1] > self.last_sacks[-1]:       # sackMode logic
                             self.last_sacks = sacks                         #
 
-                seqno = int(seqno)                        
-                if msg_type == self.ack_type and seqno > self.seqbase:
-
+                seqno = int(seqno)    
+                #print >> f1, "sender last_ack = ", self.last_ack, " seqno = ", seqno, ' window from ', self.seqbase,' to ', self.seqmax, " dupl = ", self.dup_acks
+                #print >> f1, msg_type == self.ack_type , seqno >= self.seqbase
+                if msg_type == self.ack_type and seqno >= self.seqbase:
+                    #pdb.set_trace()
                     # fast retransmit logic
-                    if seqno == self.last_ack:
+                    if seqno > self.last_ack:
+                        
+                        self.last_ack = seqno
+                        #print >> f1, "update last_ack to ", self.last_ack
+                    elif seqno == self.last_ack:
+                        
                         self.dup_acks += 1
+                        #print >> f1, "update dups to ", self.dup_acks
                         if self.dup_acks >= 4:
+                            #print >> f1, "sending update "
                             if sackMode:
                                 self.retransmit_sacks()
                             else:
                                 self.send(self.window[self.last_ack])
                             self.dup_acks = 0
                             continue
-                            
-                    elif seqno > self.last_ack:
-                        self.last_ack = seqno
                         
                     # window logic    
                     for i in range(self.seqbase, seqno):
@@ -89,10 +97,13 @@ class Sender(BasicSender.BasicSender):
                 # if msg_type == 'sack' and int(seqno) == self.seqfinack:
                     # return
             else:
+                #print " response = ", response
                 if self.sackMode:
                     self.retransmit_sacks()   
                 else:
-                    self.send_window()                
+                    self.send_window()
+                    pass
+
            
 
     def prepare_window(self):
