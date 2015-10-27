@@ -15,6 +15,8 @@ class BasicTest(object):
         - result: a method to be called when it's time to return a result
     """
     def __init__(self, name, forwarder, input_file, sackMode = False):
+        self.dropped = False
+        self.drops = 0
         self.name = name
         self.forwarder = forwarder
         self.sackMode = sackMode

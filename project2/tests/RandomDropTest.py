@@ -18,3 +18,15 @@ class RandomDropTest(BasicTest):
 
         # empty out the in_queue
         self.forwarder.in_queue = []
+
+class FirstFinDropTest(BasicTest):
+    def handle_packet(self):
+        print "SELF.DROPPED:", self.dropped
+        for p in self.forwarder.in_queue:
+            if p.full_packet[:3] == 'fin' and not self.dropped:
+                print "Dropping fin packet"
+                self.dropped = True
+            else:
+                self.forwarder.out_queue.append(p)
+        self.forwarder.in_queue = []
+
